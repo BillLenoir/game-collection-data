@@ -1,6 +1,10 @@
 {
   "dependencies": [
     {
+      "name": "@10mi2/tms-projen-projects",
+      "type": "build"
+    },
+    {
       "name": "@aws/pdk",
       "type": "build"
     },

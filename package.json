@@ -21,6 +21,7 @@
     "synth-workspace": "npx projen"
   },
   "devDependencies": {
+    "@10mi2/tms-projen-projects": "^0.0.39",
     "@aws/pdk": "^0.23.49",
     "@types/node": "^18",
     "@typescript-eslint/eslint-plugin": "^7",
