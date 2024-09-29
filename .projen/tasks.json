@@ -177,7 +177,7 @@
       },
       "steps": [
         {
-          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@aws/pdk,@types/node,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,npm-check-updates,prettier,ts-node,typescript,aws-cdk-lib,cdk-nag"
+          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@aws/pdk,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,npm-check-updates,prettier,ts-node,typescript,aws-cdk-lib,cdk-nag"
         },
         {
           "exec": "npm install"
