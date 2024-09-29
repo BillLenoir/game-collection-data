@@ -9,6 +9,7 @@ const project = new monorepo.MonorepoTsProject({
   packageManager: javascript.NodePackageManager.NPM,
   prettier: true,
   projenrcTs: true,
+  gitignore: ["game-collection-data.code-workspace"],
 });
 
 project.addDevDeps("@10mi2/tms-projen-projects");
@@ -25,6 +26,29 @@ const data = new typescript.TypeScriptAppProject({
       exactOptionalPropertyTypes: false,
       // noPropertyAccessFromIndexSignature is too heavy handed as well
       noPropertyAccessFromIndexSignature: false,
+      alwaysStrict: undefined,
+      declaration: undefined,
+      esModuleInterop: undefined,
+      experimentalDecorators: undefined,
+      inlineSourceMap: undefined,
+      inlineSources: undefined,
+      lib: undefined,
+      module: "es2022",
+      noEmitOnError: undefined,
+      noFallthroughCasesInSwitch: undefined,
+      noImplicitAny: undefined,
+      noImplicitReturns: undefined,
+      noImplicitThis: undefined,
+      noUnusedLocals: undefined,
+      noUnusedParameters: undefined,
+      resolveJsonModule: undefined,
+      strict: undefined,
+      strictNullChecks: undefined,
+      strictPropertyInitialization: undefined,
+      stripInternal: undefined,
+      target: undefined,
+      moduleResolution: javascript.TypeScriptModuleResolution.BUNDLER,
+      noEmit: true,
     },
   },
   tsconfigDev: {
