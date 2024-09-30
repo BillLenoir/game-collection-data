@@ -1,7 +1,7 @@
 export async function fetchData(path: string, paramater: string | number) {
-  const bggBaseURL = process.env.BGG_URL ?? 'https://boardgamegeek.com/xmlapi/';
-  const requestUrl = `${bggBaseURL}${path}/${paramater}`;
-  //  const response = await fetch(requestUrl);
+
+  const requestUrl = `https://boardgamegeek.com/xmlapi/${path}/${paramater}`;
+
   let response;
   try {
     response = await fetch(requestUrl);

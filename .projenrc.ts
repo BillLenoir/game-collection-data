@@ -1,5 +1,6 @@
 import { monorepo } from "@aws/pdk";
 import { javascript, typescript } from "projen"; // <- change this line
+import { TypeScriptModuleResolution } from "projen/lib/javascript";
 
 const project = new monorepo.MonorepoTsProject({
   devDeps: ["@aws/pdk"],
@@ -28,17 +29,19 @@ const data = new typescript.TypeScriptAppProject({
       noPropertyAccessFromIndexSignature: false,
       alwaysStrict: undefined,
       declaration: undefined,
-      esModuleInterop: undefined,
+      esModuleInterop: true,
       experimentalDecorators: undefined,
       inlineSourceMap: undefined,
       inlineSources: undefined,
-      lib: undefined,
+      lib: ["es2022"],
       module: "es2022",
+      moduleResolution: TypeScriptModuleResolution.NODE,
       noEmitOnError: undefined,
       noFallthroughCasesInSwitch: undefined,
       noImplicitAny: undefined,
       noImplicitReturns: undefined,
       noImplicitThis: undefined,
+      noUncheckedIndexedAccess: true,
       noUnusedLocals: undefined,
       noUnusedParameters: undefined,
       resolveJsonModule: undefined,
@@ -46,9 +49,10 @@ const data = new typescript.TypeScriptAppProject({
       strictNullChecks: undefined,
       strictPropertyInitialization: undefined,
       stripInternal: undefined,
-      target: undefined,
-      moduleResolution: javascript.TypeScriptModuleResolution.BUNDLER,
+      target: "es2022",
+      // moduleResolution: javascript.TypeScriptModuleResolution.BUNDLER,
       noEmit: true,
+      verbatimModuleSyntax: true,
     },
   },
   tsconfigDev: {

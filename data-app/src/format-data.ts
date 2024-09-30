@@ -1,26 +1,39 @@
-import fs from 'fs/promises';
+import fs from 'fs';
 import convert from 'xml-js';
-import { fetchData } from './fetch-data';
 import {
-  BggGameData,
-  EntityGameDataSave,
-  ComboEntityData,
-  ComboGameData,
-  ComboRelationshipData,
-  EntityData,
-} from './interfaces';
+  type BggGameData,
+  type EntityGameDataSave,
+  type ComboEntityData,
+  type ComboGameData,
+  type ComboRelationshipData,
+  type EntityData,
+  type FormatCollectionDataResponse,
+} from './utils/data.types';
+import { fetchData } from './utils/fetch-data';
 
-export async function prepareEntityGameData(
-  collectionData: BggGameData,
-): Promise<EntityGameDataSave> {
+export async function formatCollectionData(rawCollectionData: string): Promise<FormatCollectionDataResponse> {
+  let formatDataSuccessful = true;
+  let message = '';
+
+  // Transform the response
+  const convertedResponse = convert.xml2json(rawCollectionData, {
+    compact: true,
+    spaces: 2,
+  });
+
+  const collectionData: BggGameData = JSON.parse(convertedResponse);
+  console.log('\x1b[32m%s\x1b[0m', 'I transformed the collection data!');
+
   console.log('\x1b[32m%s\x1b[0m', 'Begin processing each game...');
+
   // An array where each element is parsed data for a single game.
-  let parsedEntityData: ComboEntityData[] = [];
+  const parsedEntityData: ComboEntityData[] = [];
   const parsedGameData: ComboGameData[] = [];
   const parsedRelationshipData: ComboRelationshipData[] = [];
 
-  // This cycles through the collection data, one game at a time.
   let idCount = 1;
+
+  // This cycles through the collection data, one game at a time.
   for (const game of collectionData.items.item) {
     // Will only process games that I own, want, previously owned, or want to sell or trade
     if (
@@ -31,13 +44,9 @@ export async function prepareEntityGameData(
     ) {
       const thisGameId = idCount++;
 
-      // Extract the data from the transformation colleciton data request..
-      // BGG Game ID
+      // Extract the data from the transformation collection data request.
       const bggGameID = game._attributes.objectid ?? '';
-
-      // Game Title
       const gameTitle = game.name._text ?? 'No title';
-
       const gameYearPublished =
         game.yearpublished !== undefined
           ? game.yearpublished._text
@@ -49,25 +58,47 @@ export async function prepareEntityGameData(
         game.thumbnail !== undefined ? game.thumbnail._text : 'No thumbnail';
 
       const gameOwn = game.status._attributes.own === '1' ? true : false;
-
       const gameWantToBuy = game.status._attributes.want === '1' ? true : false;
-
       const gamePrevOwned =
         game.status._attributes.prevowned === '1' ? true : false;
-
       const gameForTrade =
         game.status._attributes.fortrade === '1' ? true : false;
 
       // Fetch additional game data.
       let retryFetch = true;
-      let rawResponseGameData = await fetchData('boardgame', bggGameID);
+      let response;
 
+      try {
+        response = await fetchData('boardgame', bggGameID);
+
+        if (response === undefined) {
+          throw new Error('There was no response from BGG');
+        }
+
+        if (response.includes(
+          'Your request for this collection has been accepted and will be processed',
+        ) === true) {
+          throw new Error(
+            'Your request for this collection has been accepted and will be processed.  Please try again later for access.',
+          );
+        }
+      } catch (error) {
+        console.error(error);
+      }
+
+      // Cannot arrive at this point if the directory doesn't exist, so no need to check.
       const rawResponseGameDataFile = `./src/data/game-data/game-${bggGameID}.xml`;
-      if (rawResponseGameData !== undefined) {
-        await fs.writeFile(rawResponseGameDataFile, rawResponseGameData);
+      if (response !== undefined) {
+        fs.writeFile(rawResponseGameDataFile, response, (error) => {
+          if (error) {
+            formatDataSuccessful = false;
+            message = `${error}`;
+          }
+        });
+
         // Transform the game data response
         const convertedResponseGameData = convert.xml2json(
-          rawResponseGameData,
+          response,
           {
             compact: true,
             spaces: 2,
@@ -141,7 +172,7 @@ export async function prepareEntityGameData(
       } else {
         if (retryFetch === true) {
           console.log(`Retrying the fetch of ${bggGameID}'s data`);
-          rawResponseGameData = await fetchData('boardgame', bggGameID);
+          response = await fetchData('boardgame', bggGameID);
           retryFetch = false;
         } else {
           retryFetch = true;
@@ -202,5 +233,42 @@ export async function prepareEntityGameData(
     }
   }
 
-  return parsedEntityGameData;
+  // Changed the flow to save 3 separate files insted of one
+  const gameComboDataFile = './src/data/game-combo-data.json';
+  const writableGameComboData = JSON.stringify(parsedEntityGameData.gamedata);
+  const entityDataFile = './src/data/entity-data.json';
+  const writableEntityData = JSON.stringify(parsedEntityGameData.entitydata);
+  const relationshipDataFile = './src/data/relationship-data.json';
+  const writableRelationshipData = JSON.stringify(
+    parsedEntityGameData.relationshipdata,
+  );
+    // const writableEntityGameData = JSON.stringify(parsedEntityGameData);
+  fs.writeFile(gameComboDataFile, writableGameComboData, (error) => {
+    if (error) {
+      formatDataSuccessful = false;
+      message = `${error}`;
+    }
+  });
+  fs.writeFile(entityDataFile, writableEntityData, (error) => {
+    if (error) {
+      formatDataSuccessful = false;
+      message = `${error}`;
+    }
+  });
+  fs.writeFile(relationshipDataFile, writableRelationshipData, (error) => {
+    if (error) {
+      formatDataSuccessful = false;
+      message = `${error}`;
+    }
+  });
+
+  console.log(
+    '\x1b[32m%s\x1b[0m',
+    'I wrote the parsed entity-game data files for the collection data!',
+  );
+  return {
+    response: JSON.stringify(parsedEntityGameData),
+    formatDataSuccessful,
+    message,
+  };
 }
