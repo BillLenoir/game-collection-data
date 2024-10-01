@@ -1,9 +1,12 @@
-import { z } from 'zod';
+import { z } from "zod";
+
+export const SuccessOrFailureZ = z.enum(["SUCCESS", "FAIL"]);
+export type SuccessOrFailure = z.infer<typeof SuccessOrFailureZ>;
 
 export const DataPrepConfigsZ = z.object({
   bggUser: z.string(),
   needToFetch: z.boolean(),
-  whereToSave: z.enum(['Locally', 'S3']),
+  whereToSave: z.enum(["Locally", "S3"]),
   localData: z.object({
     dataDirectory: z.string(),
     rawResponseFile: z.string(),
@@ -151,16 +154,9 @@ export const BggGameDataZ = z.object({
 });
 export type BggGameData = z.infer<typeof BggGameDataZ>;
 
-export const GetCollectionDataResponse = z.object({
-  response: z.string(),
-  getDataSuccessful: z.boolean(),
+export const DataResponseZ = z.object({
+  data: z.string(),
+  successOrFailure: SuccessOrFailureZ,
   message: z.string(),
 });
-export type GetCollectionDataResponse = z.infer<typeof GetCollectionDataResponse>;
-
-export const FormatCollectionDataResponse = z.object({
-  response: z.string(),
-  formatDataSuccessful: z.boolean(),
-  message: z.string(),
-});
-export type FormatCollectionDataResponse = z.infer<typeof FormatCollectionDataResponse>;
+export type DataResponse = z.infer<typeof DataResponseZ>;

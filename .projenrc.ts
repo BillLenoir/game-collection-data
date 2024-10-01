@@ -1,5 +1,6 @@
+import { TmsTypeScriptAppProject } from "@10mi2/tms-projen-projects";
 import { monorepo } from "@aws/pdk";
-import { javascript, typescript } from "projen"; // <- change this line
+import { javascript } from "projen"; // <- change this line
 import { TypeScriptModuleResolution } from "projen/lib/javascript";
 
 const project = new monorepo.MonorepoTsProject({
@@ -15,7 +16,7 @@ const project = new monorepo.MonorepoTsProject({
 
 project.addDevDeps("@10mi2/tms-projen-projects");
 
-const data = new typescript.TypeScriptAppProject({
+const data = new TmsTypeScriptAppProject({
   parent: project,
   name: "typescript-data-app",
   defaultReleaseBranch: "main",
