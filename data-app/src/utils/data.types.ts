@@ -3,6 +3,9 @@ import { z } from "zod";
 export const SuccessOrFailureZ = z.enum(["SUCCESS", "FAIL"]);
 export type SuccessOrFailure = z.infer<typeof SuccessOrFailureZ>;
 
+export const LogMessageTypeZ = z.enum(["ERROR", "INFO", "WARNING"]);
+export type LogMessageType = z.infer<typeof LogMessageTypeZ>;
+
 export const DataPrepConfigsZ = z.object({
   bggUser: z.string(),
   needToFetch: z.boolean(),
@@ -14,14 +17,14 @@ export const DataPrepConfigsZ = z.object({
 });
 export type DataPrepConfigs = z.infer<typeof DataPrepConfigsZ>;
 
-export const ComboEntityDataZ = z.object({
+export const EntityDataZ = z.object({
   id: z.number(),
   bggid: z.string(),
   name: z.string(),
 });
-export type ComboEntityData = z.infer<typeof ComboEntityDataZ>;
+export type EntityData = z.infer<typeof EntityDataZ>;
 
-export const ComboGameDataZ = z.object({
+export const GameDataZ = z.object({
   id: z.number(),
   bggid: z.string(),
   title: z.string(),
@@ -33,51 +36,36 @@ export const ComboGameDataZ = z.object({
   gameprevowned: z.boolean(),
   gamefortrade: z.boolean(),
 });
-export type ComboGameData = z.infer<typeof ComboGameDataZ>;
+export type GameData = z.infer<typeof GameDataZ>;
 
-export const ComboRelationshipDataZ = z.object({
+export const RelationshipDataZ = z.object({
   gameid: z.number(),
   entityid: z.number(),
   relationshiptype: z.string(),
 });
-export type ComboRelationshipData = z.infer<typeof ComboRelationshipDataZ>;
+export type RelationshipData = z.infer<typeof RelationshipDataZ>;
 
-export const EntityDataZ = z.object({
+export const BggEntityDataZ = z.object({
   _attributes: z.object({
     objectid: z.string(),
   }),
   _text: z.string(),
   relationshiptype: z.string(),
 });
-export type EntityData = z.infer<typeof EntityDataZ>;
+export type BggEntityData = z.infer<typeof BggEntityDataZ>;
 
 export const EntityGameDataSaveZ = z.object({
-  entitydata: z.array(ComboEntityDataZ),
-  gamedata: z.array(ComboGameDataZ),
-  relationshipdata: z.array(ComboRelationshipDataZ),
+  entitydata: z.array(EntityDataZ),
+  gamedata: z.array(GameDataZ),
+  relationshipdata: z.array(RelationshipDataZ),
 });
 export type EntityGameDataSave = z.infer<typeof EntityGameDataSaveZ>;
-
-export const GameOnlyDataZ = z.object({
-  id: z.string(),
-  title: z.string(),
-  yearpublished: z.string(),
-  thumbnail: z.string().nullable(),
-  publisher: z.array(z.string()),
-  designer: z.array(z.string()),
-  description: z.string(),
-  gameown: z.boolean(),
-  gamewanttobuy: z.boolean(),
-  gameprevowned: z.boolean(),
-  gamefortrade: z.boolean(),
-});
-export type GameOnlyData = z.infer<typeof GameOnlyDataZ>;
 
 const AttributesZ = z.object({
   _text: z.string(),
 });
 
-const ItemZ = z.object({
+const BggGameDataZ = z.object({
   _attributes: z.object({
     objecttype: z.string(),
     objectid: z.string(),
@@ -134,8 +122,9 @@ const ItemZ = z.object({
   }),
   numplays: AttributesZ,
 });
+export type BggGameData = z.infer<typeof BggGameDataZ>;
 
-export const BggGameDataZ = z.object({
+export const BggCollectionDataZ = z.object({
   _declaration: z.object({
     _attributes: z.object({
       version: z.string(),
@@ -149,10 +138,10 @@ export const BggGameDataZ = z.object({
       termsofuse: z.string(),
       pubdate: z.string(),
     }),
-    item: z.array(ItemZ),
+    item: z.array(BggGameDataZ),
   }),
 });
-export type BggGameData = z.infer<typeof BggGameDataZ>;
+export type BggCollectionData = z.infer<typeof BggCollectionDataZ>;
 
 export const DataResponseZ = z.object({
   data: z.string(),

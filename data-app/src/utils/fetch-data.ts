@@ -1,42 +1,48 @@
-import type { DataResponse, SuccessOrFailure } from "./data.types";
+import type { DataResponse } from "./data.types";
 
 export async function fetchData(
   path: string,
   paramater: string | number,
 ): Promise<DataResponse> {
-  let successOrFailure: SuccessOrFailure = "SUCCESS";
-  let message = "";
-  let response;
-
   const requestUrl = `https://boardgamegeek.com/xmlapi/${path}/${paramater}`;
 
   try {
-    response = await fetch(requestUrl);
+    const rawResponse = await fetch(requestUrl);
 
-    if (!response) {
-      successOrFailure = "FAIL";
-      message = "Did not receive a response!";
+    // Handle the case where response is null/undefined
+    if (!rawResponse) {
       return {
-        successOrFailure,
-        message,
-        data: `${response}`,
+        data: `${rawResponse}`,
+        successOrFailure: "FAIL",
+        message: "Did not receive a response from BGG!",
       };
     }
 
-    response = await response.text();
+    const response = await rawResponse.text();
+
+    if (
+      response.includes(
+        "Your request for this collection has been accepted and will be processed",
+      ) === true
+    ) {
+      return {
+        data: response,
+        successOrFailure: "FAIL",
+        message:
+          "Your request for this collection has been accepted and will be processed.  Please try again later for access.",
+      };
+    }
 
     return {
       data: response,
-      successOrFailure,
+      successOrFailure: "SUCCESS",
       message: "Received a response from BGG!",
     };
   } catch (error) {
-    successOrFailure = "FAIL";
-    message = `An error occurred during the fetch: ${error}`;
     return {
-      successOrFailure,
-      message,
-      data: `${response}`,
+      successOrFailure: "FAIL",
+      message: `An error occurred during the fetch: ${error}`,
+      data: "",
     };
   }
 }

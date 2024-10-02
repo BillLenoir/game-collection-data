@@ -1,71 +1,35 @@
-import fs from "fs";
+import fs from "fs/promises";
 import { dataConfigs } from "./utils/data.config";
-import type { DataResponse, SuccessOrFailure } from "./utils/data.types";
+import type { DataResponse } from "./utils/data.types";
 import { fetchData } from "./utils/fetch-data";
 
 export async function getCollectionData(
   username: string,
 ): Promise<DataResponse> {
-  let successOrFailure: SuccessOrFailure = "SUCCESS";
-  let message = "";
-  let response: DataResponse;
-
   try {
-    response = await fetchData("collection", username);
+    const response = await fetchData("collection", username);
 
-    if (!response) {
-      successOrFailure = "FAIL";
-      message = "Something went wrong with the fetch.";
-      return {
-        data: "",
-        successOrFailure,
-        message,
-      };
+    // Handle the case where response is null/undefined
+    if (!response || response.successOrFailure === "FAIL") {
+      return response;
     }
 
-    if (
-      response.data.includes(
-        "Your request for this collection has been accepted and will be processed",
-      ) === true
-    ) {
-      successOrFailure = "FAIL";
-      message =
-        "Your request for this collection has been accepted and will be processed.  Please try again later for access.";
-      return {
-        data: response.data,
-        successOrFailure,
-        message,
-      };
+    const { dataDirectory, rawResponseFile } = dataConfigs.localData;
+
+    // Create directory if it doesn't exist
+    if (!(await fs.stat(dataDirectory).catch(() => false))) {
+      await fs.mkdir(dataDirectory, { recursive: true });
     }
+
+    // Write the data to a file asynchronously
+    await fs.writeFile(rawResponseFile, response.data);
+
+    return response;
   } catch (error) {
-    successOrFailure = "FAIL";
-    message = `${error}`;
     return {
       data: "",
-      successOrFailure,
-      message,
+      successOrFailure: "FAIL",
+      message: `Error occurred: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
-
-  const dataDirectory = dataConfigs.localData.dataDirectory;
-  const rawResponseFile = dataConfigs.localData.rawResponseFile;
-
-  if (!fs.existsSync(dataDirectory)) {
-    fs.mkdirSync(dataDirectory, { recursive: true });
-  }
-
-  fs.writeFile(rawResponseFile, response.data, (error) => {
-    if (error) {
-      successOrFailure = "FAIL";
-      message = `${error}`;
-    } else {
-      message = "I wrote the raw response XML file for the collection data!";
-    }
-  });
-
-  return {
-    data: response.data,
-    successOrFailure,
-    message,
-  };
 }
