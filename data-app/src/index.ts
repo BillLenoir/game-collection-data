@@ -1,5 +1,6 @@
 import { formatCollectionData } from "./format-collection-data";
 import { getCollectionData } from "./get-collection-data";
+import { hydrateDatabase } from "./hydrate-database";
 import { dataConfigs } from "./utils/data.config";
 import { logMessage } from "./utils/log-messages";
 
@@ -11,29 +12,46 @@ async function handleCollectionData() {
   try {
     const bggCollectionData = await getCollectionData(dataConfigs.bggUser);
 
-    if (bggCollectionData.successOrFailure === "FAIL") {
-      return logMessage(
+    if (!bggCollectionData || bggCollectionData.successOrFailure === "FAIL") {
+      logMessage(
         "ERROR",
         "getCollectionData Failed!",
         bggCollectionData.message,
       );
     }
 
-    logMessage("INFO", bggCollectionData.message);
+    logMessage("HAPPY", bggCollectionData.message);
 
     const formattedCollectionData = await formatCollectionData(
       bggCollectionData.data,
     );
 
-    if (formattedCollectionData.successOrFailure === "FAIL") {
-      return logMessage(
+    if (
+      !formattedCollectionData ||
+      formattedCollectionData.successOrFailure === "FAIL"
+    ) {
+      logMessage(
         "ERROR",
         "formatCollectionData Failed!",
         formattedCollectionData.message,
       );
     }
 
-    logMessage("INFO", "Looking good so far!");
+    logMessage("HAPPY", formattedCollectionData.message);
+
+    const hydratedDatabase = await hydrateDatabase(
+      formattedCollectionData.data,
+    );
+
+    if (!hydratedDatabase || hydratedDatabase.successOrFailure === "FAIL") {
+      return logMessage(
+        "ERROR",
+        "hydrateDatabase Failed!",
+        hydratedDatabase.message,
+      );
+    }
+
+    logMessage("HAPPY", "Looking good so far!");
   } catch (error) {
     logMessage(
       "ERROR",

@@ -3,7 +3,7 @@ import { z } from "zod";
 export const SuccessOrFailureZ = z.enum(["SUCCESS", "FAIL"]);
 export type SuccessOrFailure = z.infer<typeof SuccessOrFailureZ>;
 
-export const LogMessageTypeZ = z.enum(["ERROR", "INFO", "WARNING"]);
+export const LogMessageTypeZ = z.enum(["ERROR", "HAPPY", "INFO", "WARNING"]);
 export type LogMessageType = z.infer<typeof LogMessageTypeZ>;
 
 export const DataPrepConfigsZ = z.object({
@@ -13,6 +13,9 @@ export const DataPrepConfigsZ = z.object({
   localData: z.object({
     dataDirectory: z.string(),
     rawResponseFile: z.string(),
+    gameDataFile: z.string(),
+    entityDataFile: z.string(),
+    relationshipDataFile: z.string(),
   }),
 });
 export type DataPrepConfigs = z.infer<typeof DataPrepConfigsZ>;
@@ -21,6 +24,7 @@ export const EntityDataZ = z.object({
   id: z.number(),
   bggid: z.string(),
   name: z.string(),
+  type: z.string(),
 });
 export type EntityData = z.infer<typeof EntityDataZ>;
 
@@ -39,8 +43,8 @@ export const GameDataZ = z.object({
 export type GameData = z.infer<typeof GameDataZ>;
 
 export const RelationshipDataZ = z.object({
-  gameid: z.number(),
-  entityid: z.number(),
+  gameId: z.number(),
+  entityId: z.string(),
   relationshiptype: z.string(),
 });
 export type RelationshipData = z.infer<typeof RelationshipDataZ>;
@@ -65,7 +69,7 @@ const AttributesZ = z.object({
   _text: z.string(),
 });
 
-const BggGameDataZ = z.object({
+const BggGameDataFromCollectionZ = z.object({
   _attributes: z.object({
     objecttype: z.string(),
     objectid: z.string(),
@@ -122,7 +126,9 @@ const BggGameDataZ = z.object({
   }),
   numplays: AttributesZ,
 });
-export type BggGameData = z.infer<typeof BggGameDataZ>;
+export type BggGameDataFromCollection = z.infer<
+  typeof BggGameDataFromCollectionZ
+>;
 
 export const BggCollectionDataZ = z.object({
   _declaration: z.object({
@@ -138,7 +144,7 @@ export const BggCollectionDataZ = z.object({
       termsofuse: z.string(),
       pubdate: z.string(),
     }),
-    item: z.array(BggGameDataZ),
+    item: z.array(BggGameDataFromCollectionZ),
   }),
 });
 export type BggCollectionData = z.infer<typeof BggCollectionDataZ>;

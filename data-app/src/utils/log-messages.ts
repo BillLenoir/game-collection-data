@@ -12,8 +12,14 @@ export const logMessage = (
         console.error("\x1b[31m%s\x1b[0m", errorMessage);
       }
       break;
-    case "INFO":
+    case "HAPPY":
       console.log("\x1b[32m%s\x1b[0m", message);
+      if (errorMessage) {
+        console.log("\x1b[32m%s\x1b[0m", errorMessage);
+      }
+      break;
+    case "INFO":
+      console.log(message);
       if (errorMessage) {
         console.log("\x1b[32m%s\x1b[0m", errorMessage);
       }

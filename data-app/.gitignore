@@ -29,6 +29,8 @@ jspm_packages/
 .yarn-integrity
 .cache
 src/data/*
+.env
+prisma/dev.db
 /test-reports/
 junit.xml
 /coverage/

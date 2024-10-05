@@ -63,7 +63,7 @@ const data = new TmsTypeScriptAppProject({
       noPropertyAccessFromIndexSignature: false,
     },
   },
-  gitignore: ["src/data/*"],
+  gitignore: ["src/data/*", ".env", "prisma/dev.db"],
 });
 
 data.addDeps("node-fetch", "@prisma/client", "xml-js", "zod");
