@@ -8,7 +8,7 @@ import { logMessage } from "./utils/log-messages";
  *
  * @returns
  */
-async function handleCollectionData() {
+async function generateCollectionData() {
   try {
     const bggCollectionData = await getCollectionData(dataConfigs.bggUser);
 
@@ -62,4 +62,4 @@ async function handleCollectionData() {
 }
 
 // Handle the promise returned by handleCollectionData
-void handleCollectionData();
+void generateCollectionData();

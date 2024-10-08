@@ -15,21 +15,29 @@ export const DataPrepConfigsZ = z.object({
     rawResponseFile: z.string(),
     gameDataFile: z.string(),
     entityDataFile: z.string(),
+    roleDataFile: z.string(),
     relationshipDataFile: z.string(),
   }),
 });
 export type DataPrepConfigs = z.infer<typeof DataPrepConfigsZ>;
 
+export const DataResponseZ = z.object({
+  data: z.string(),
+  successOrFailure: SuccessOrFailureZ,
+  message: z.string(),
+});
+export type DataResponse = z.infer<typeof DataResponseZ>;
+
+// System Data Types
 export const EntityDataZ = z.object({
-  id: z.number(),
+  id: z.string(),
   bggid: z.string(),
   name: z.string(),
-  type: z.string(),
 });
 export type EntityData = z.infer<typeof EntityDataZ>;
 
 export const GameDataZ = z.object({
-  id: z.number(),
+  id: z.string(),
   bggid: z.string(),
   title: z.string(),
   yearpublished: z.string(),
@@ -42,29 +50,28 @@ export const GameDataZ = z.object({
 });
 export type GameData = z.infer<typeof GameDataZ>;
 
+export const RoleDataZ = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+export type RoleData = z.infer<typeof RoleDataZ>;
+
 export const RelationshipDataZ = z.object({
-  gameId: z.number(),
+  gameId: z.string(),
   entityId: z.string(),
-  relationshiptype: z.string(),
+  roleId: z.string(),
 });
 export type RelationshipData = z.infer<typeof RelationshipDataZ>;
 
-export const BggEntityDataZ = z.object({
-  _attributes: z.object({
-    objectid: z.string(),
-  }),
-  _text: z.string(),
-  relationshiptype: z.string(),
-});
-export type BggEntityData = z.infer<typeof BggEntityDataZ>;
-
 export const EntityGameDataSaveZ = z.object({
-  entitydata: z.array(EntityDataZ),
-  gamedata: z.array(GameDataZ),
-  relationshipdata: z.array(RelationshipDataZ),
+  gameData: z.array(GameDataZ),
+  entityData: z.array(EntityDataZ),
+  roleData: z.array(RoleDataZ),
+  relationshipData: z.array(RelationshipDataZ),
 });
 export type EntityGameDataSave = z.infer<typeof EntityGameDataSaveZ>;
 
+// BGG Data Types
 const AttributesZ = z.object({
   _text: z.string(),
 });
@@ -130,6 +137,14 @@ export type BggGameDataFromCollection = z.infer<
   typeof BggGameDataFromCollectionZ
 >;
 
+export const BggEntityZ = z.object({
+  _attributes: z.object({
+    objectid: z.string(),
+  }),
+  _text: z.string(),
+});
+export type BggEntity = z.infer<typeof BggEntityZ>;
+
 export const BggCollectionDataZ = z.object({
   _declaration: z.object({
     _attributes: z.object({
@@ -149,9 +164,100 @@ export const BggCollectionDataZ = z.object({
 });
 export type BggCollectionData = z.infer<typeof BggCollectionDataZ>;
 
-export const DataResponseZ = z.object({
-  data: z.string(),
-  successOrFailure: SuccessOrFailureZ,
-  message: z.string(),
+export const BggGameNameZ = z.object({
+  _attributes: z.object({
+    primary: z.string(),
+    sortindex: z.string(),
+  }),
+  _text: z.string(),
 });
-export type DataResponse = z.infer<typeof DataResponseZ>;
+export type BggGameName = z.infer<typeof BggGameNameZ>;
+
+export const BggPollResultZ = z.object({
+  _attributes: z.object({
+    level: z.string(),
+    value: z.string(),
+    numvotes: z.string(),
+  }),
+});
+export type BggPollResult = z.infer<typeof BggPollResultZ>;
+
+export const BggPollZ = z.object({
+  _attributes: z.object({
+    name: z.string(),
+    title: z.string(),
+    totalvotes: z.string(),
+  }),
+  results: z.object({
+    result: z.array(BggPollResultZ),
+  }),
+});
+export type BggPoll = z.infer<typeof BggPollZ>;
+
+export const BggGameDataFromSingleCallJustTheGameZ = z.object({
+  _attributes: z.object({
+    objectid: z.string(), // the bggId
+  }),
+  yearpublished: z.object({
+    _text: z.string(),
+  }),
+  minplayers: z.object({
+    _text: z.string(),
+  }),
+  maxplayers: z.object({
+    _text: z.string(),
+  }),
+  playingtime: z.object({
+    _text: z.string(),
+  }),
+  minplaytime: z.object({
+    _text: z.string(),
+  }),
+  maxplaytime: z.object({
+    _text: z.string(),
+  }),
+  age: z.object({
+    _text: z.string(),
+  }),
+  name: z.array(BggGameNameZ),
+  description: z.object({
+    _text: z.string(),
+  }),
+  thumbnail: z.object({
+    _text: z.string(),
+  }),
+  image: z.object({
+    _text: z.string(),
+  }),
+  boardgamepublisher: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  boardgamepodcastepisode: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  boardgameexpansion: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  boardgamehonor: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  boardgameversion: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  cardset: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  boardgameaccessory: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  boardgamefamily: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  videogamebg: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  boardgamecategory: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  boardgamemechanic: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  boardgamedeveloper: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  boardgameartist: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  boardgamedesigner: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  boardgamesubdomain: z.union([BggEntityZ, z.array(BggEntityZ)]),
+  poll: z.union([BggPollZ, z.array(BggPollZ)]),
+});
+export type BggGameDataFromSingleCallJustTheGame = z.infer<
+  typeof BggGameDataFromSingleCallJustTheGameZ
+>;
+
+export const BggGameDataFromSingleCallZ = z.object({
+  boardgames: z.object({
+    _attributes: z.object({
+      termsofuse: z.string(),
+    }),
+    boardgame: BggGameDataFromSingleCallJustTheGameZ,
+  }),
+});
+export type BggGameDataFromSingleCall = z.infer<
+  typeof BggGameDataFromSingleCallZ
+>;

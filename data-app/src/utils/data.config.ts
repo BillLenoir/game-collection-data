@@ -19,6 +19,7 @@ export const dataConfigs: DataPrepConfigs = {
     rawResponseFile: "./src/data/rawResponse.xml",
     gameDataFile: "./src/data/game-data.json",
     entityDataFile: "./src/data/entity-data.json",
+    roleDataFile: "./src/data/role-data.json",
     relationshipDataFile: "./src/data/relationship-data.json",
   },
 };

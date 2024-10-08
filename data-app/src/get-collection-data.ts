@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import { dataConfigs } from "./utils/data.config";
 import type { DataResponse } from "./utils/data.types";
 import { fetchData } from "./utils/fetch-data";
+import { writeToFile } from "./utils/write-to-file";
 
 export async function getCollectionData(
   username: string,
@@ -22,7 +23,7 @@ export async function getCollectionData(
     }
 
     // Write the data to a file asynchronously
-    await fs.writeFile(rawResponseFile, response.data);
+    await writeToFile(rawResponseFile, response.data);
 
     return response;
   } catch (error) {

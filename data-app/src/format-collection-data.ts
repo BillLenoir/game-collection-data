@@ -5,37 +5,27 @@ import { dataConfigs } from "./utils/data.config";
 import {
   type BggCollectionData,
   type BggGameDataFromCollection,
+  type BggGameDataFromSingleCall,
   type DataResponse,
   type EntityData,
   type EntityGameDataSave,
   type GameData,
   type RelationshipData,
+  type RoleData,
 } from "./utils/data.types";
 import { logMessage } from "./utils/log-messages";
+import { writeToFile } from "./utils/write-to-file";
 
-const entitiesData: EntityData[] = [];
-const relationshipsData: RelationshipData[] = [];
+const entityData: EntityData[] = [];
+const roleData: RoleData[] = [];
+const relationshipData: RelationshipData[] = [];
 let idCount = 1;
-
-// Helper function to handle file writing
-async function writeToFile(path: string, data: string): Promise<void> {
-  try {
-    await fs.writeFile(path, data);
-    logMessage("HAPPY", `File written: ${path}`);
-  } catch (error) {
-    logMessage(
-      "ERROR",
-      `Failed to write file ${path}`,
-      `${error instanceof Error ? error.message : String(error)}`,
-    );
-  }
-}
 
 // Process individual game data
 async function processGame(
   game: BggGameDataFromCollection,
 ): Promise<DataResponse> {
-  const systemId = idCount++;
+  const id = `${idCount++}`;
   const bggGameId = game._attributes.objectid ?? "";
   const gameTitle = game.name._text ?? "No title";
   const gameYearPublished = game.yearpublished?._text ?? "No year indicated";
@@ -96,11 +86,11 @@ async function processGame(
   const gameDescription =
     fullGameData.boardgames.boardgame.description?._text ?? "";
 
-  processEntity(fullGameData.boardgames.boardgame, systemId);
+  processEntitiesRolesAndRelationships(fullGameData.boardgames.boardgame, id);
 
   return {
     data: JSON.stringify({
-      id: systemId,
+      id,
       bggid: bggGameId,
       title: gameTitle,
       yearpublished: gameYearPublished,
@@ -116,64 +106,77 @@ async function processGame(
   };
 }
 
-function processEntity(
-  gameData: BggGameDataFromCollection,
-  gameId: number,
+function processEntitiesRolesAndRelationships(
+  gameData: BggGameDataFromSingleCall,
+  gameId: string,
 ): void {
-  const theseEntities: EntityData[] = [];
   for (const [key, value] of Object.entries(gameData)) {
-    let relationshipType = "";
+    let roleName;
     switch (key) {
-      case "boardgamepublisher":
-        relationshipType = "Publisher";
+      case "boardgameartist":
+        roleName = "Artist";
+        break;
+      case "boardgamecategory":
+        roleName = "Category";
         break;
       case "boardgamedesigner":
-        relationshipType = "Designer";
+        roleName = "Designer";
+        break;
+      case "boardgamedeveloper":
+        roleName = "Developer";
         break;
       case "boardgamefamily":
-        relationshipType = "Family";
+        roleName = "Family";
+        break;
+      case "boardgamemechanic":
+        roleName = "Mechanic";
+        break;
+      case "boardgamepublisher":
+        roleName = "Publisher";
+        break;
+      case "boardgamesubdomain":
+        roleName = "Subdomain";
         break;
     }
-    if (relationshipType) {
-      const bggEntities = Array.isArray(value) ? value : [value];
-      for (const entity of bggEntities) {
-        theseEntities.push({
-          id: idCount++,
+    // Only process the data if a role name was found
+    if (roleName) {
+      // Processing Role
+      const foundRole = roleData.find(
+        (existingRole) => existingRole.name === roleName,
+      );
+      const thisRole = {
+        id: foundRole?.id ? foundRole.id : `${idCount++}`,
+        name: roleName,
+      };
+      if (!foundRole) {
+        // This is a new role
+        roleData.push(thisRole);
+      }
+      // Processing Entities
+      const possibleBggEntities = Array.isArray(value) ? value : [value];
+      for (const entity of possibleBggEntities) {
+        const foundEntity = entityData.find(
+          (existingEntity) =>
+            existingEntity.bggid === entity._attributes.objectid &&
+            existingEntity.name == entity._text,
+        );
+        const thisEntity = {
+          id: foundEntity?.id ? foundEntity.id : `${entity._text}-${idCount++}`,
           bggid: entity._attributes.objectid,
-          name: entity._text,
-          type: entity.type,
+          name: entity._text || "",
+        };
+        if (!foundEntity) {
+          // This is a new entity
+          entityData.push(thisEntity);
+        }
+        // Processing relationships
+        relationshipData.push({
+          gameId: gameId,
+          entityId: thisEntity.id,
+          roleId: thisRole.id,
         });
       }
     }
-  }
-
-  if (theseEntities.length > 0) {
-    theseEntities.forEach((entity) => {
-      if (
-        entitiesData.some(
-          (existingEntity) => existingEntity.bggid !== entity.bggid,
-        )
-      ) {
-        entitiesData.push(entity);
-      } else if (
-        entitiesData.some(
-          (existingEntity) =>
-            existingEntity.bggid !== entity.bggid &&
-            existingEntity.name !== entity.name,
-        )
-      ) {
-        logMessage(
-          "ERROR",
-          "Two entities with same BGG ID, but different names!",
-          `ID: ${entity.id}`,
-        );
-      }
-      relationshipsData.push({
-        gameId,
-        entityId: entity.bggid,
-        relationshiptype: entity.name,
-      });
-    });
   }
 }
 
@@ -192,16 +195,7 @@ export async function formatCollectionData(
 
   // Process games concurrently using Promise.all
   for (const game of collectionData.items.item) {
-    if (
-      game.status._attributes.own === "1" ||
-      game.status._attributes.want === "1" ||
-      game.status._attributes.prevowned === "1" ||
-      game.status._attributes.fortrade === "1"
-    ) {
-      gameDataRequest.push(processGame(game));
-    } else {
-      logMessage("WARNING", `-- This game doesn't count: ${game.name._text}`);
-    }
+    gameDataRequest.push(processGame(game));
   }
 
   let gameDataResponse;
@@ -214,7 +208,7 @@ export async function formatCollectionData(
       message: "Game processing failed!",
     };
   }
-  const gamesData: GameData[] = gameDataResponse
+  const gameData: GameData[] = gameDataResponse
     .filter(
       (result): result is PromiseFulfilledResult<DataResponse> =>
         result.status === "fulfilled",
@@ -224,26 +218,38 @@ export async function formatCollectionData(
     .filter(
       (result): result is PromiseRejectedResult => result.status === "rejected",
     )
-    .forEach((result) =>
-      logMessage("ERROR", "Game processing failed", result.reason),
+    .forEach((result, index) =>
+      logMessage(
+        "ERROR",
+        `Game processing failed for game ${collectionData.items.item[index]!.name._text}. Reason:`,
+        result.reason,
+      ),
     );
 
   // Further processing or file writing can be done here based on gameResults
-  const writableGameData = JSON.stringify(gamesData);
-  const writableEntityData = JSON.stringify(entitiesData);
-  const writableRelationshipData = JSON.stringify(relationshipsData);
+  const writableGameData = JSON.stringify(gameData);
+  const writableEntityData = JSON.stringify(entityData);
+  const writableRoleData = JSON.stringify(roleData);
+  const writableRelationshipData = JSON.stringify(relationshipData);
   const filesToWrite: Array<Promise<void>> = [];
   filesToWrite.push(
     writeToFile(dataConfigs.localData.gameDataFile, writableGameData),
-    writeToFile(dataConfigs.localData.gameDataFile, writableEntityData),
-    writeToFile(dataConfigs.localData.entityDataFile, writableRelationshipData),
+    writeToFile(dataConfigs.localData.entityDataFile, writableEntityData),
+    writeToFile(dataConfigs.localData.roleDataFile, writableRoleData),
+    writeToFile(
+      dataConfigs.localData.relationshipDataFile,
+      writableRelationshipData,
+    ),
   );
-  await Promise.all(filesToWrite);
+  await Promise.all(filesToWrite).catch((error) => {
+    logMessage("ERROR", "Failed to write some files", error.message);
+  });
 
   const entityGameData: EntityGameDataSave = {
-    gamedata: gamesData,
-    entitydata: entitiesData,
-    relationshipdata: relationshipsData,
+    gameData,
+    entityData,
+    roleData,
+    relationshipData,
   };
 
   logMessage("HAPPY", "Finished processing and saving game data!");
