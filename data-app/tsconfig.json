@@ -36,7 +36,7 @@
     "skipLibCheck": true,
     "moduleResolution": "node",
     "noEmit": true,
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
     "checkJs": true

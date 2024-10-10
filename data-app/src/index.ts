@@ -2,64 +2,84 @@ import { formatCollectionData } from "./format-collection-data";
 import { getCollectionData } from "./get-collection-data";
 import { hydrateDatabase } from "./hydrate-database";
 import { dataConfigs } from "./utils/data.config";
+import { DataResponse } from "./utils/data.types";
 import { logMessage } from "./utils/log-messages";
 
 /**
  *
- * @returns
+ * @param user, the BGG ID of the user whose collection the system is building this
+ * @returns Nothing is returned, just status messages
  */
-async function generateCollectionData() {
+export async function generateCollectionData(
+  user: string,
+): Promise<DataResponse> {
+  let bggCollectionData;
   try {
-    const bggCollectionData = await getCollectionData(dataConfigs.bggUser);
+    bggCollectionData = await getCollectionData(user);
+  } catch (error) {
+    return {
+      data: "",
+      successOrFailure: "FAIL",
+      message: `generateCollectionData > getCollectionData ERROR MESSAGE: ${error}`,
+    };
+  }
+  if (!bggCollectionData || bggCollectionData.successOrFailure === "FAIL") {
+    return {
+      data: "",
+      successOrFailure: "FAIL",
+      message: `generateCollectionData > getCollectionData BGG ERROR: ${bggCollectionData.message}`,
+    };
+  }
 
-    if (!bggCollectionData || bggCollectionData.successOrFailure === "FAIL") {
-      logMessage(
-        "ERROR",
-        "getCollectionData Failed!",
-        bggCollectionData.message,
-      );
-    }
+  logMessage("HAPPY", bggCollectionData.message);
 
-    logMessage("HAPPY", bggCollectionData.message);
-
-    const formattedCollectionData = await formatCollectionData(
+  let formattedCollectionData;
+  try {
+    formattedCollectionData = await formatCollectionData(
       bggCollectionData.data,
     );
-
-    if (
-      !formattedCollectionData ||
-      formattedCollectionData.successOrFailure === "FAIL"
-    ) {
-      logMessage(
-        "ERROR",
-        "formatCollectionData Failed!",
-        formattedCollectionData.message,
-      );
-    }
-
-    logMessage("HAPPY", formattedCollectionData.message);
-
-    const hydratedDatabase = await hydrateDatabase(
-      formattedCollectionData.data,
-    );
-
-    if (!hydratedDatabase || hydratedDatabase.successOrFailure === "FAIL") {
-      return logMessage(
-        "ERROR",
-        "hydrateDatabase Failed!",
-        hydratedDatabase.message,
-      );
-    }
-
-    logMessage("HAPPY", "Looking good so far!");
   } catch (error) {
-    logMessage(
-      "ERROR",
-      "An unexpected error occurred.",
-      `${error instanceof Error ? error.message : String(error)}`,
-    );
+    return {
+      data: "",
+      successOrFailure: "FAIL",
+      message: `generateCollectionData > formattedCollectionData ERROR MESSAGE: ${error}`,
+    };
   }
+
+  if (
+    !formattedCollectionData ||
+    formattedCollectionData.successOrFailure === "FAIL"
+  ) {
+    return {
+      data: "",
+      successOrFailure: "FAIL",
+      message: `generateCollectionData > formattedCollectionData Processing ERROR: ${formattedCollectionData.message}`,
+    };
+  }
+
+  logMessage("HAPPY", formattedCollectionData.message);
+
+  const hydratedDatabase = await hydrateDatabase(formattedCollectionData.data);
+
+  if (!hydratedDatabase || hydratedDatabase.successOrFailure === "FAIL") {
+    return {
+      data: "",
+      successOrFailure: "FAIL",
+      message: `generateCollectionData > hydrateDatabase ERROR MESSAGE: ${hydratedDatabase.message}`,
+    };
+  }
+  return {
+    data: "",
+    successOrFailure: "SUCCESS",
+    message: "We're done!",
+  };
 }
 
-// Handle the promise returned by handleCollectionData
-void generateCollectionData();
+// Handle the promise returned by generateCollectionData
+const collectionDataOutcome: DataResponse = await generateCollectionData(
+  dataConfigs.bggUser,
+);
+logMessage(
+  "INFO",
+  `FINAL MESSAGE: --> ${JSON.stringify(collectionDataOutcome)} <--`,
+);

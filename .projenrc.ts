@@ -53,7 +53,7 @@ const data = new TmsTypeScriptAppProject({
       target: "es2022",
       // moduleResolution: javascript.TypeScriptModuleResolution.BUNDLER,
       noEmit: true,
-      verbatimModuleSyntax: true,
+      verbatimModuleSyntax: false,
     },
   },
   tsconfigDev: {
@@ -63,7 +63,7 @@ const data = new TmsTypeScriptAppProject({
       noPropertyAccessFromIndexSignature: false,
     },
   },
-  gitignore: ["src/data/*", ".env", "prisma/dev.db"],
+  gitignore: ["src/data/*", ".env", "prisma/*.db"],
 });
 
 data.addDeps("node-fetch", "@prisma/client", "xml-js", "zod");

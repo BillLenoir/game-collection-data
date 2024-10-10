@@ -9,7 +9,13 @@ import {
 } from "./utils/data.types";
 import { logMessage } from "./utils/log-messages";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL_TEST,
+    },
+  },
+});
 
 export async function hydrateDatabase(
   collectionData: string,

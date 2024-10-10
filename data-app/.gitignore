@@ -30,7 +30,7 @@ jspm_packages/
 .cache
 src/data/*
 .env
-prisma/dev.db
+prisma/*.db
 /test-reports/
 junit.xml
 /coverage/

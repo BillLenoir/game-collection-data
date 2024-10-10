@@ -22,7 +22,7 @@ const relationshipData: RelationshipData[] = [];
 let idCount = 1;
 
 // Process individual game data
-async function processGame(
+export async function processGame(
   game: BggGameDataFromCollection,
 ): Promise<DataResponse> {
   const id = `${idCount++}`;
