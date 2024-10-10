@@ -21,6 +21,33 @@
         }
       ]
     },
+    "bundle": {
+      "name": "bundle",
+      "description": "Prepare assets",
+      "steps": [
+        {
+          "spawn": "bundle:index"
+        }
+      ]
+    },
+    "bundle:index": {
+      "name": "bundle:index",
+      "description": "Create a JavaScript bundle from src/index.ts",
+      "steps": [
+        {
+          "exec": "esbuild --bundle src/index.ts --target=\"node18\" --platform=\"node\" --outfile=\"assets/index/index.js\" --sourcemap --format=esm --banner:js=\"import { createRequire } from 'module';const require = createRequire(import.meta.url);const __filename = (await import('node:url')).fileURLToPath(import.meta.url);const __dirname = (await import('node:path')).dirname(__filename);\""
+        }
+      ]
+    },
+    "bundle:index:watch": {
+      "name": "bundle:index:watch",
+      "description": "Continuously update the JavaScript bundle from src/index.ts",
+      "steps": [
+        {
+          "exec": "esbuild --bundle src/index.ts --target=\"node18\" --platform=\"node\" --outfile=\"assets/index/index.js\" --sourcemap --format=esm --banner:js=\"import { createRequire } from 'module';const require = createRequire(import.meta.url);const __filename = (await import('node:url')).fileURLToPath(import.meta.url);const __dirname = (await import('node:path')).dirname(__filename);\" --watch"
+        }
+      ]
+    },
     "compile": {
       "name": "compile",
       "description": "Only compile",
@@ -76,18 +103,36 @@
     },
     "pre-compile": {
       "name": "pre-compile",
-      "description": "Prepare the project for compilation"
+      "description": "Prepare the project for compilation",
+      "steps": [
+        {
+          "spawn": "bundle"
+        }
+      ]
     },
     "test": {
       "name": "test",
       "description": "Run tests",
+      "env": {
+        "NODE_OPTIONS": "$(echo $NODE_OPTIONS --experimental-vm-modules)"
+      },
       "steps": [
         {
-          "exec": "jest --passWithNoTests --updateSnapshot",
+          "exec": "jest --passWithNoTests --ci",
           "receiveArgs": true
         },
         {
           "spawn": "eslint"
+        }
+      ]
+    },
+    "test:update": {
+      "name": "test:update",
+      "description": "Update jest snapshots",
+      "steps": [
+        {
+          "exec": "jest --updateSnapshot --passWithNoTests --ci",
+          "receiveArgs": true
         }
       ]
     },
@@ -108,13 +153,13 @@
       },
       "steps": [
         {
-          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@types/jest,eslint-import-resolver-typescript,eslint-plugin-import,jest,ts-jest,typescript"
+          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@tsconfig/node18,@types/jest,esbuild,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,jest,prettier,prisma,ts-jest,typescript,@prisma/client,node-fetch,xml-js,zod"
         },
         {
           "exec": "npm install"
         },
         {
-          "exec": "npm update @types/jest @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-import-resolver-typescript eslint-plugin-import eslint jest jest-junit ts-jest typescript"
+          "exec": "npm update @tsconfig/node18 @types/jest @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser esbuild eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint jest jest-junit prettier prisma ts-jest ts-node typescript @prisma/client node-fetch xml-js zod"
         },
         {
           "exec": "npx projen"

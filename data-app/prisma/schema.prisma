@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL_TEST")
+}
+
+model Game {
+  id String @id
+  bggid String @unique
+  title String
+  yearpublished String?
+  thumbnail String?
+  description String
+  gameown Boolean
+  gamewanttobuy Boolean
+  gameprevowned Boolean
+  gamefortrade Boolean
+  game EntityGameRoleRelationship[]
+}
+
+model Entity {
+  id String @id
+  bggid String
+  name String
+  entity EntityGameRoleRelationship[]
+}
+
+model Role {
+  id String @id
+  name String
+  role EntityGameRoleRelationship[]
+}
+
+model EntityGameRoleRelationship {
+  game Game @relation (fields: [gameid], references: [id])
+  gameid String
+  entity Entity @relation(fields: [entityid], references: [id])
+  entityid String
+  role Role @relation(fields: [roleid], references: [id])
+  roleid String
+  @@id([entityid, gameid, roleid])
+}

@@ -28,9 +28,14 @@ jspm_packages/
 *.tgz
 .yarn-integrity
 .cache
+src/data/*
+.env
+prisma/*.db
 /test-reports/
 junit.xml
 /coverage/
+!/.prettierignore
+!/.prettierrc.json
 !/test/
 !/tsconfig.json
 !/tsconfig.dev.json
@@ -38,5 +43,9 @@ junit.xml
 /lib
 /dist/
 !/.eslintrc.json
+!/.nvmrc
+!/.vscode/settings.json
+!/.vscode/extensions.json
+/assets/
 !/project.json
 !/LICENSE

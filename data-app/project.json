@@ -51,6 +51,13 @@
         "cwd": "data-app"
       }
     },
+    "test:update": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx projen test:update",
+        "cwd": "data-app"
+      }
+    },
     "test:watch": {
       "executor": "nx:run-commands",
       "options": {
@@ -83,6 +90,27 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "npx projen eslint",
+        "cwd": "data-app"
+      }
+    },
+    "bundle:index": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx projen bundle:index",
+        "cwd": "data-app"
+      }
+    },
+    "bundle": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx projen bundle",
+        "cwd": "data-app"
+      }
+    },
+    "bundle:index:watch": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx projen bundle:index:watch",
         "cwd": "data-app"
       }
     }
