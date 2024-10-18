@@ -112,7 +112,7 @@ const insertGames = async (games: GameData[]): Promise<DataResponse> => {
     const hydrateGames = await prisma.game.create({
       data: {
         id: game.id,
-        bggid: game.bggid,
+        bggid: game.bggId,
         title: game.title,
         yearpublished: game.yearpublished,
         thumbnail: game.thumbnail,
@@ -140,7 +140,7 @@ const insertEntities = async (
     const hydrateEntities = await prisma.entity.create({
       data: {
         id: entity.id,
-        bggid: entity.bggid,
+        bggid: entity.bggId,
         name: entity.name,
       },
     });

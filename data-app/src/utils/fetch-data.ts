@@ -11,9 +11,9 @@ export async function fetchData(
     rawResponse = await fetch(requestUrl);
   } catch (error) {
     return {
+      data: "",
       successOrFailure: "FAIL",
       message: `An error occurred during the fetch: ${error}`,
-      data: "",
     };
   }
 
@@ -26,8 +26,16 @@ export async function fetchData(
     };
   }
 
-  const response = await rawResponse.text();
-
+  let response;
+  try {
+    response = await rawResponse.text();
+  } catch (error) {
+    return {
+      data: "",
+      successOrFailure: "FAIL",
+      message: `An error occurred during the conversion of the response to text: ${error}`,
+    };
+  }
   if (
     response.includes(
       "Your request for this collection has been accepted and will be processed",

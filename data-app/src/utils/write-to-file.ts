@@ -9,7 +9,7 @@ export async function writeToFile(path: string, data: string): Promise<void> {
     logMessage(
       "ERROR",
       `Failed to write file ${path}`,
-      `${error instanceof Error ? error.message : String(error)}`,
+      `DATA TYPE: ${typeof data}\n${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }

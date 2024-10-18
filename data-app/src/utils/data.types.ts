@@ -1,11 +1,13 @@
 import { z } from "zod";
 
+// enums
 export const SuccessOrFailureZ = z.enum(["SUCCESS", "FAIL"]);
 export type SuccessOrFailure = z.infer<typeof SuccessOrFailureZ>;
 
 export const LogMessageTypeZ = z.enum(["ERROR", "HAPPY", "INFO", "WARNING"]);
 export type LogMessageType = z.infer<typeof LogMessageTypeZ>;
 
+// system types
 export const DataPrepConfigsZ = z.object({
   bggUser: z.string(),
   needToFetch: z.boolean(),
@@ -28,17 +30,29 @@ export const DataResponseZ = z.object({
 });
 export type DataResponse = z.infer<typeof DataResponseZ>;
 
+export const ExtractedEntityZ = z.object({
+  id: z.string(),
+  bggId: z.string(),
+  name: z.string(),
+  role: z.string(),
+  existingEntity: z.boolean(),
+});
+export type ExtractedEntity = z.infer<typeof ExtractedEntityZ>;
+
+export const ExtractedEntitiesZ = z.array(ExtractedEntityZ);
+export type ExtractedEntities = z.infer<typeof ExtractedEntitiesZ>;
+
 // System Data Types
 export const EntityDataZ = z.object({
   id: z.string(),
-  bggid: z.string(),
+  bggId: z.string(),
   name: z.string(),
 });
 export type EntityData = z.infer<typeof EntityDataZ>;
 
 export const GameDataZ = z.object({
   id: z.string(),
-  bggid: z.string(),
+  bggId: z.string(),
   title: z.string(),
   yearpublished: z.string(),
   thumbnail: z.string(),
@@ -140,6 +154,7 @@ export type BggGameDataFromCollection = z.infer<
 export const BggEntityZ = z.object({
   _attributes: z.object({
     objectid: z.string(),
+    inbound: z.string().optional(),
   }),
   _text: z.string(),
 });
@@ -173,26 +188,28 @@ export const BggGameNameZ = z.object({
 });
 export type BggGameName = z.infer<typeof BggGameNameZ>;
 
-export const BggPollResultZ = z.object({
-  _attributes: z.object({
-    level: z.string(),
-    value: z.string(),
-    numvotes: z.string(),
-  }),
+export const PollAttributesZ = z.object({
+  name: z.string().optional(),
+  title: z.string().optional(),
+  totalvotes: z.string().optional(),
+  numplayers: z.string().optional(),
+  value: z.string().optional(),
+  numvotes: z.string().optional(),
+  level: z.string().optional(),
 });
-export type BggPollResult = z.infer<typeof BggPollResultZ>;
+export type PollAttributes = z.infer<typeof PollAttributesZ>;
 
-export const BggPollZ = z.object({
-  _attributes: z.object({
-    name: z.string(),
-    title: z.string(),
-    totalvotes: z.string(),
+export const PollResultZ = z.union([
+  z.object({
+    _attributes: PollAttributesZ,
   }),
-  results: z.object({
-    result: z.array(BggPollResultZ),
-  }),
-});
-export type BggPoll = z.infer<typeof BggPollZ>;
+  z.array(
+    z.object({
+      _attributes: PollAttributesZ,
+    }),
+  ),
+]);
+export type PollResult = z.infer<typeof PollResultZ>;
 
 export const BggGameDataFromSingleCallJustTheGameZ = z.object({
   _attributes: z.object({
@@ -219,7 +236,7 @@ export const BggGameDataFromSingleCallJustTheGameZ = z.object({
   age: z.object({
     _text: z.string(),
   }),
-  name: z.array(BggGameNameZ),
+  name: z.union([BggGameNameZ, z.array(BggGameNameZ)]),
   description: z.object({
     _text: z.string(),
   }),
@@ -229,22 +246,31 @@ export const BggGameDataFromSingleCallJustTheGameZ = z.object({
   image: z.object({
     _text: z.string(),
   }),
-  boardgamepublisher: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  boardgamepodcastepisode: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  boardgameexpansion: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  boardgamehonor: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  boardgameversion: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  cardset: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  boardgameaccessory: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  boardgamefamily: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  videogamebg: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  boardgamecategory: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  boardgamemechanic: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  boardgamedeveloper: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  boardgameartist: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  boardgamedesigner: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  boardgamesubdomain: z.union([BggEntityZ, z.array(BggEntityZ)]),
-  poll: z.union([BggPollZ, z.array(BggPollZ)]),
+  boardgamepublisher: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  boardgamepodcastepisode: z
+    .union([BggEntityZ, z.array(BggEntityZ)])
+    .optional(),
+  boardgameexpansion: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  boardgamehonor: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  boardgameversion: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  cardset: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  boardgameaccessory: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  boardgamefamily: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  videogamebg: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  boardgamecategory: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  boardgamemechanic: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  boardgamedeveloper: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  boardgameartist: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  boardgamedesigner: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  boardgamesubdomain: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  boardgameintegration: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
+  poll: z.array(
+    z.object({
+      _attributes: PollAttributesZ,
+      results: z.union([z.array(PollResultZ), z.object({})]),
+    }),
+  ),
+  "poll-summary": z.object({}).optional(),
 });
 export type BggGameDataFromSingleCallJustTheGame = z.infer<
   typeof BggGameDataFromSingleCallJustTheGameZ

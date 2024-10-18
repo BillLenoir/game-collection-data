@@ -3,9 +3,10 @@ import convert from "xml-js";
 import { getGameData } from "./get-game-data";
 import { dataConfigs } from "./utils/data.config";
 import {
+  type BggGameDataFromSingleCallJustTheGame,
+  type ExtractedEntities,
   type BggCollectionData,
   type BggGameDataFromCollection,
-  type BggGameDataFromSingleCall,
   type DataResponse,
   type EntityData,
   type EntityGameDataSave,
@@ -83,15 +84,26 @@ export async function processGame(
     logMessage("ERROR", "There's no game data to parse!");
   }
   const fullGameData = JSON.parse(convertedResponseGameData);
+  if (id === "1") {
+    console.log(JSON.stringify(fullGameData));
+  }
   const gameDescription =
     fullGameData.boardgames.boardgame.description?._text ?? "";
 
-  processEntitiesRolesAndRelationships(fullGameData.boardgames.boardgame, id);
+  const entities = extractAndProcessEntities(fullGameData.boardgames.boardgame);
+  for (const entity of entities) {
+    const role = processRoles(entity.role);
+    relationshipData.push({
+      gameId: id,
+      entityId: entity.id,
+      roleId: role.id,
+    });
+  }
 
   return {
     data: JSON.stringify({
       id,
-      bggid: bggGameId,
+      bggId: bggGameId,
       title: gameTitle,
       yearpublished: gameYearPublished,
       thumbnail: gameThumbnail,
@@ -106,10 +118,10 @@ export async function processGame(
   };
 }
 
-function processEntitiesRolesAndRelationships(
-  gameData: BggGameDataFromSingleCall,
-  gameId: string,
-): void {
+export function extractAndProcessEntities(
+  gameData: BggGameDataFromSingleCallJustTheGame,
+): ExtractedEntities {
+  let theseEntities = [];
   for (const [key, value] of Object.entries(gameData)) {
     let roleName;
     switch (key) {
@@ -140,44 +152,47 @@ function processEntitiesRolesAndRelationships(
     }
     // Only process the data if a role name was found
     if (roleName) {
-      // Processing Role
-      const foundRole = roleData.find(
-        (existingRole) => existingRole.name === roleName,
-      );
-      const thisRole = {
-        id: foundRole?.id ? foundRole.id : `${idCount++}`,
-        name: roleName,
-      };
-      if (!foundRole) {
-        // This is a new role
-        roleData.push(thisRole);
-      }
       // Processing Entities
       const possibleBggEntities = Array.isArray(value) ? value : [value];
       for (const entity of possibleBggEntities) {
         const foundEntity = entityData.find(
           (existingEntity) =>
-            existingEntity.bggid === entity._attributes.objectid &&
-            existingEntity.name == entity._text,
+            existingEntity.bggId === entity._attributes.objectid &&
+            existingEntity.name === entity._text,
         );
         const thisEntity = {
           id: foundEntity?.id ? foundEntity.id : `${entity._text}-${idCount++}`,
-          bggid: entity._attributes.objectid,
-          name: entity._text || "",
+          bggId: entity._attributes.objectid,
+          name: entity._text || "No name found",
+          role: roleName,
+          existingEntity: foundEntity ? true : false,
         };
+        theseEntities.push(thisEntity);
         if (!foundEntity) {
-          // This is a new entity
-          entityData.push(thisEntity);
+          entityData.push({
+            id: thisEntity.id,
+            bggId: thisEntity.bggId,
+            name: thisEntity.name,
+          });
         }
-        // Processing relationships
-        relationshipData.push({
-          gameId: gameId,
-          entityId: thisEntity.id,
-          roleId: thisRole.id,
-        });
       }
     }
   }
+
+  return theseEntities;
+}
+
+export function processRoles(role: string): RoleData {
+  const foundRole = roleData.find((existingRole) => existingRole.name === role);
+  const thisRole: RoleData = {
+    id: foundRole?.id ? foundRole.id : `${idCount++}`,
+    name: role,
+  };
+  if (!foundRole) {
+    // This is a new role
+    roleData.push(thisRole);
+  }
+  return thisRole;
 }
 
 export async function formatCollectionData(
