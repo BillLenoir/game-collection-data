@@ -6,7 +6,7 @@ export async function fetchData(
 ): Promise<DataResponse> {
   const requestUrl = `https://boardgamegeek.com/xmlapi/${path}/${paramater}`;
 
-  let rawResponse;
+  let rawResponse: Response;
   try {
     rawResponse = await fetch(requestUrl);
   } catch (error) {

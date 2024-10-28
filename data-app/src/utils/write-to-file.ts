@@ -6,10 +6,8 @@ export async function writeToFile(path: string, data: string): Promise<void> {
     await fs.writeFile(path, data);
     logMessage("HAPPY", `File written: ${path}`);
   } catch (error) {
-    logMessage(
-      "ERROR",
-      `Failed to write file ${path}`,
-      `DATA TYPE: ${typeof data}\n${error instanceof Error ? error.message : String(error)}`,
+    throw new Error(
+      `Failed to write file ${path} TRY FAILURE MESSAGE: ${error}`,
     );
   }
 }

@@ -1,6 +1,6 @@
 const mockFetchData = jest.fn();
 
-import { fetchTryFailedResponse } from "./test.data";
+import { fetchTryFailedFetchResponse } from "./test.data";
 import { getGameData } from "../src/get-game-data";
 import { DataResponse } from "../src/utils/data.types";
 
@@ -15,7 +15,7 @@ afterEach(async () => {
 describe("getGameData", () => {
   describe("When the try of fetchData fails", () => {
     it("Returns a fail", async () => {
-      mockFetchData.mockRejectedValue(fetchTryFailedResponse);
+      mockFetchData.mockRejectedValue(fetchTryFailedFetchResponse);
 
       const testResponse: DataResponse = await getGameData("billlenoir");
 

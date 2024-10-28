@@ -1,13 +1,13 @@
 import { z } from "zod";
 
-// enums
+// ENUMS
 export const SuccessOrFailureZ = z.enum(["SUCCESS", "FAIL"]);
 export type SuccessOrFailure = z.infer<typeof SuccessOrFailureZ>;
 
 export const LogMessageTypeZ = z.enum(["ERROR", "HAPPY", "INFO", "WARNING"]);
 export type LogMessageType = z.infer<typeof LogMessageTypeZ>;
 
-// system types
+// SYSTEM COMMUNICATION TYPES
 export const DataPrepConfigsZ = z.object({
   bggUser: z.string(),
   needToFetch: z.boolean(),
@@ -42,7 +42,7 @@ export type ExtractedEntity = z.infer<typeof ExtractedEntityZ>;
 export const ExtractedEntitiesZ = z.array(ExtractedEntityZ);
 export type ExtractedEntities = z.infer<typeof ExtractedEntitiesZ>;
 
-// System Data Types
+// INTERNAL DATA TYPES
 export const EntityDataZ = z.object({
   id: z.string(),
   bggId: z.string(),
@@ -85,9 +85,12 @@ export const EntityGameDataSaveZ = z.object({
 });
 export type EntityGameDataSave = z.infer<typeof EntityGameDataSaveZ>;
 
-// BGG Data Types
+// BGG DATA TYPES
 const AttributesZ = z.object({
   _text: z.string(),
+});
+const ValuesZ = z.object({
+  value: z.string(),
 });
 
 const BggGameDataFromCollectionZ = z.object({
@@ -98,7 +101,9 @@ const BggGameDataFromCollectionZ = z.object({
     collid: z.string(),
   }),
   name: z.object({
-    _attributes: AttributesZ,
+    _attributes: z.object({
+      sortindex: z.string(),
+    }),
     _text: z.string(),
   }),
   yearpublished: z.optional(AttributesZ),
@@ -114,21 +119,21 @@ const BggGameDataFromCollectionZ = z.object({
       numowned: z.string(),
     }),
     rating: z.object({
-      _attributes: AttributesZ,
+      _attributes: ValuesZ,
       usersrated: z.object({
-        _attributes: AttributesZ,
+        _attributes: ValuesZ,
       }),
       average: z.object({
-        _attributes: AttributesZ,
+        _attributes: ValuesZ,
       }),
       bayesaverage: z.object({
-        _attributes: AttributesZ,
+        _attributes: ValuesZ,
       }),
       stddev: z.object({
-        _attributes: AttributesZ,
+        _attributes: ValuesZ,
       }),
       median: z.object({
-        _attributes: AttributesZ,
+        _attributes: ValuesZ,
       }),
     }),
   }),
@@ -146,6 +151,7 @@ const BggGameDataFromCollectionZ = z.object({
     }),
   }),
   numplays: AttributesZ,
+  comment: AttributesZ.optional(),
 });
 export type BggGameDataFromCollection = z.infer<
   typeof BggGameDataFromCollectionZ

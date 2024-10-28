@@ -10,21 +10,17 @@ export async function getCollectionData(
   let response;
   try {
     response = await fetchData("collection", username);
+    if (!response || response.successOrFailure === "FAIL") {
+      return {
+        data: "",
+        successOrFailure: "FAIL",
+        message: response.message ?? "No response from BGG call.",
+      };
+    }
   } catch (error) {
-    return {
-      data: "",
-      successOrFailure: "FAIL",
-      message: `getCollectionData ERROR MESSAGE: --> ${error} <--`,
-    };
-  }
-
-  // Handle the case where response is null/undefined
-  if (!response || response.successOrFailure === "FAIL") {
-    return {
-      data: "",
-      successOrFailure: "FAIL",
-      message: response.message ?? "No response from BGG call.",
-    };
+    throw new Error(
+      `getCollectionData > fetchData TRY FAILURE MESSAGE: ${error}`,
+    );
   }
 
   const { dataDirectory, rawResponseFile } = dataConfigs.localData;

@@ -3,7 +3,7 @@ import convert from "xml-js";
 import { dataConfigs } from "./data.config";
 import { logMessage } from "./log-messages";
 
-const gameId = "5";
+const gameId = "269546";
 const filePath = `${dataConfigs.localData.dataDirectory}game-data/game-${gameId}.xml`;
 let gameData;
 let convertGameXmlToJson;

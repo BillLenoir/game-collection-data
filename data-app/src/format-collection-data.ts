@@ -43,15 +43,23 @@ export async function processGame(
   let moreGameData;
   try {
     moreGameData = await getGameData(bggGameId);
+    let thisMessage = `Problem getting data for ${gameTitle}.`;
+    if (moreGameData.message && thisMessage !== moreGameData.message) {
+      thisMessage += `\n${moreGameData.message}`;
+    }
     if (!moreGameData || moreGameData.successOrFailure === "FAIL") {
-      logMessage(
-        "ERROR",
-        `Problem getting data for ${game.name}`,
-        moreGameData.message,
-      );
+      return {
+        data: "",
+        successOrFailure: "FAIL",
+        message: thisMessage,
+      };
     }
   } catch (error) {
-    logMessage("ERROR", `getGameData for ${game.name} failed.`, `${error}`);
+    return {
+      data: "",
+      successOrFailure: "FAIL",
+      message: `getGameData for ${gameTitle} failed.\nMESSAGE: ${error}`,
+    };
   }
 
   // Create directory if it doesn't exist
@@ -84,9 +92,6 @@ export async function processGame(
     logMessage("ERROR", "There's no game data to parse!");
   }
   const fullGameData = JSON.parse(convertedResponseGameData);
-  if (id === "1") {
-    console.log(JSON.stringify(fullGameData));
-  }
   const gameDescription =
     fullGameData.boardgames.boardgame.description?._text ?? "";
 
@@ -220,7 +225,7 @@ export async function formatCollectionData(
     return {
       data: "",
       successOrFailure: "FAIL",
-      message: "Game processing failed!",
+      message: "Processing of individual game promises failed!",
     };
   }
   const gameData: GameData[] = gameDataResponse

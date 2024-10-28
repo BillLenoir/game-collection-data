@@ -2,7 +2,7 @@ const mockFetch = jest.fn();
 
 import {
   fetchBggTryAgainResponse,
-  fetchTryFailedResponse,
+  fetchTryFailedFetchResponse,
   validGameXML,
 } from "./test.data";
 import { DataResponse } from "../src/utils/data.types";
@@ -17,7 +17,7 @@ afterEach(async () => {
 describe("fetchData", () => {
   describe("When the try of fetch fails", () => {
     it("Returns a fail", async () => {
-      mockFetch.mockRejectedValue(fetchTryFailedResponse);
+      mockFetch.mockRejectedValue(fetchTryFailedFetchResponse);
 
       const testResponse: DataResponse = await fetchData(
         "collection",

@@ -1,6 +1,6 @@
 import { LogMessageType } from "./data.types";
 
-const logWithColor = (
+export const logWithColor = (
   color: string,
   message: string,
   errorMessage?: string,

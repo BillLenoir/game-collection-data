@@ -4,75 +4,55 @@ import { hydrateDatabase } from "./hydrate-database";
 import { dataConfigs } from "./utils/data.config";
 import { logMessage } from "./utils/log-messages";
 
-/**
- *
- * @param user, the BGG ID of the user whose collection the system is building this
- * @returns Nothing is returned, just status messages
- */
-export async function generateCollectionData(): Promise<void> {
-  const user = dataConfigs.bggUser;
-  let bggCollectionData;
+const user = dataConfigs.bggUser;
+let bggCollectionData;
+try {
+  bggCollectionData = await getCollectionData(user);
+} catch (error) {
+  throw new Error(
+    `generateCollectionData > getCollectionData TRY FAILURE MESSAGE: ${error}`,
+  );
+}
+if (!bggCollectionData || bggCollectionData.successOrFailure === "FAIL") {
+  throw new Error(
+    `generateCollectionData > getCollectionData BGG ERROR: ${bggCollectionData?.message ?? "no error message"}`,
+  );
+} else {
+  logMessage("HAPPY", bggCollectionData.message);
+
+  let formattedCollectionData;
   try {
-    bggCollectionData = await getCollectionData(user);
+    formattedCollectionData = await formatCollectionData(
+      bggCollectionData.data,
+    );
   } catch (error) {
-    logMessage(
-      "ERROR",
-      "FAIL!",
-      `generateCollectionData > getCollectionData TRY FAILURE MESSAGE: ${error}`,
+    throw new Error(
+      `generateCollectionData > formattedCollectionData TRY FAILURE MESSAGE: ${error}`,
     );
   }
-  if (!bggCollectionData || bggCollectionData.successOrFailure === "FAIL") {
-    logMessage(
-      "ERROR",
-      "FAIL!",
-      `generateCollectionData > getCollectionData BGG ERROR: ${bggCollectionData?.message ?? "no error message"}`,
+
+  if (
+    !formattedCollectionData ||
+    formattedCollectionData.successOrFailure === "FAIL"
+  ) {
+    throw new Error(
+      `generateCollectionData > formattedCollectionData Processing ERROR: ${formattedCollectionData?.message ?? "no error message"}`,
     );
   } else {
-    logMessage("HAPPY", bggCollectionData.message);
+    logMessage("HAPPY", formattedCollectionData.message);
 
-    let formattedCollectionData;
-    try {
-      formattedCollectionData = await formatCollectionData(
-        bggCollectionData.data,
-      );
-    } catch (error) {
-      logMessage(
-        "ERROR",
-        "FAIL!",
-        `generateCollectionData > formattedCollectionData TRY FAILURE MESSAGE: ${error}`,
+    const hydratedDatabase = await hydrateDatabase(
+      formattedCollectionData.data,
+    );
+
+    if (!hydratedDatabase || hydratedDatabase.successOrFailure === "FAIL") {
+      throw new Error(
+        `generateCollectionData > hydrateDatabase ERROR MESSAGE: ${hydratedDatabase.message}`,
       );
     }
-
-    if (
-      !formattedCollectionData ||
-      formattedCollectionData.successOrFailure === "FAIL"
-    ) {
-      logMessage(
-        "ERROR",
-        "FAIL!",
-        `generateCollectionData > formattedCollectionData Processing ERROR: ${formattedCollectionData?.message ?? "no error message"}`,
-      );
-    } else {
-      logMessage("HAPPY", formattedCollectionData.message);
-
-      const hydratedDatabase = await hydrateDatabase(
-        formattedCollectionData.data,
-      );
-
-      if (!hydratedDatabase || hydratedDatabase.successOrFailure === "FAIL") {
-        logMessage(
-          "ERROR",
-          "FAIL!",
-          `generateCollectionData > hydrateDatabase ERROR MESSAGE: ${hydratedDatabase.message}`,
-        );
-      }
-      logMessage(
-        "HAPPY",
-        "Collection data successfully recorded in the database!",
-      );
-    }
+    logMessage(
+      "HAPPY",
+      "Collection data successfully recorded in the database!",
+    );
   }
 }
-
-// Handle the promise returned by generateCollectionData
-void generateCollectionData();
