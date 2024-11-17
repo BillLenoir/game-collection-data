@@ -66,6 +66,7 @@
   "private": true,
   "workspaces": {
     "packages": [
+      "apollo",
       "data-app"
     ]
   },

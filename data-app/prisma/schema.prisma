@@ -21,7 +21,7 @@ model Game {
   gamewanttobuy Boolean
   gameprevowned Boolean
   gamefortrade Boolean
-  game EntityGameRoleRelationship[]
+  entities EntityGameRoleRelationship[]
 }
 
 model Entity {

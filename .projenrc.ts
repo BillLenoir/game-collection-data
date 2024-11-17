@@ -16,6 +16,50 @@ const project = new monorepo.MonorepoTsProject({
 
 project.addDevDeps("@10mi2/tms-projen-projects");
 
+const apollo = new TmsTypeScriptAppProject({
+  parent: project,
+  name: "apollo-server",
+  defaultReleaseBranch: "main",
+  outdir: "apollo",
+  packageManager: project.package.packageManager,
+  esmSupportConfig: true,
+  tsconfigBaseStrictest: true,
+  tsconfig: {
+    compilerOptions: {
+      // exactOptionalPropertyTypes is too heavy handed, conflicts with prisma and pothos generated code
+      exactOptionalPropertyTypes: false,
+      // noPropertyAccessFromIndexSignature is too heavy handed as well
+      noPropertyAccessFromIndexSignature: false,
+    },
+  },
+  tsconfigDev: {
+    compilerOptions: {
+      esModuleInterop: true,
+      exactOptionalPropertyTypes: false,
+      noPropertyAccessFromIndexSignature: false,
+    },
+  },
+});
+
+apollo.addDeps(
+  "@tsconfig/node18",
+  "@apollo/server",
+  "graphql",
+  "zod",
+  "@prisma/client",
+);
+apollo.addDevDeps(
+  "nodemon",
+  "@graphql-codegen/cli",
+  "@graphql-codegen/typescript-resolvers",
+  "@graphql-codegen/typescript",
+  "prisma",
+);
+apollo.tasks.addTask("start:dev", {
+  description: "Start the server in development mode",
+  exec: "nodemon src/index.ts",
+});
+
 const data = new TmsTypeScriptAppProject({
   parent: project,
   name: "typescript-data-app",
