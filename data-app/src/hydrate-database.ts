@@ -12,7 +12,7 @@ import { logMessage } from "./utils/log-messages";
 const prisma = new PrismaClient({
   datasources: {
     db: {
-      url: process.env.DATABASE_URL_TEST,
+      url: process.env.DATABASE_URL_DEV,
     },
   },
 });
@@ -109,20 +109,25 @@ export async function hydrateDatabase(
 const insertGames = async (games: GameData[]): Promise<DataResponse> => {
   const gamesInserted = [];
   for (const game of games) {
-    const hydrateGames = await prisma.game.create({
-      data: {
-        id: game.id,
-        bggid: game.bggId,
-        title: game.title,
-        yearpublished: game.yearpublished,
-        thumbnail: game.thumbnail,
-        description: game.description,
-        gameown: game.gameown,
-        gamewanttobuy: game.gamewanttobuy,
-        gameprevowned: game.gameprevowned,
-        gamefortrade: game.gamefortrade,
-      },
-    });
+    let hydrateGames;
+    try {
+      hydrateGames = await prisma.game.create({
+        data: {
+          id: game.id,
+          bggid: game.bggId,
+          title: game.title,
+          yearpublished: game.yearpublished,
+          thumbnail: game.thumbnail,
+          description: game.description,
+          gameown: game.gameown,
+          gamewanttobuy: game.gamewanttobuy,
+          gameprevowned: game.gameprevowned,
+          gamefortrade: game.gamefortrade,
+        },
+      });
+    } catch (error) {
+      logMessage("ERROR", `${error}`);
+    }
     gamesInserted.push(hydrateGames);
   }
   return {

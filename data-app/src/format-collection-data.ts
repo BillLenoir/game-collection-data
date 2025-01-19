@@ -22,6 +22,53 @@ const roleData: RoleData[] = [];
 const relationshipData: RelationshipData[] = [];
 let idCount = 1;
 
+async function processBatch(
+  requests: Array<Promise<DataResponse>>,
+  gameData: GameData[],
+): Promise<{ data: string; successOrFailure: string; message: string } | void> {
+  let gameDataResponse;
+
+  try {
+    gameDataResponse = await Promise.allSettled(requests);
+  } catch (error) {
+    return {
+      data: "",
+      successOrFailure: "FAIL",
+      message: "Processing of individual game promises failed!",
+    };
+  }
+
+  for (let j = 0; j < gameDataResponse.length; j++) {
+    if (gameDataResponse[j]?.status === "fulfilled") {
+      try {
+        const thisGameDataResponse = gameDataResponse[
+          j
+        ] as PromiseFulfilledResult<DataResponse>;
+        if (thisGameDataResponse.value.data) {
+          gameData.push(JSON.parse(thisGameDataResponse.value.data));
+        }
+      } catch (error) {
+        logMessage(
+          "ERROR",
+          `Error pushing: \n${error}\n${JSON.stringify(gameDataResponse[j])}\n\n`,
+        );
+      }
+    }
+  }
+
+  gameDataResponse
+    .filter(
+      (result): result is PromiseRejectedResult => result.status === "rejected",
+    )
+    .forEach((result) =>
+      logMessage(
+        "ERROR",
+        `Game processing failed for game ${result}. Reason:`,
+        result.reason,
+      ),
+    );
+}
+
 // Process individual game data
 export async function processGame(
   game: BggGameDataFromCollection,
@@ -166,7 +213,7 @@ export function extractAndProcessEntities(
             existingEntity.name === entity._text,
         );
         const thisEntity = {
-          id: foundEntity?.id ? foundEntity.id : `${entity._text}-${idCount++}`,
+          id: foundEntity?.id ? foundEntity.id : `${idCount++}`,
           bggId: entity._attributes.objectid,
           name: entity._text || "No name found",
           role: roleName,
@@ -212,39 +259,30 @@ export async function formatCollectionData(
   logMessage("INFO", "Begin processing the games...");
 
   const gameDataRequest: Array<Promise<DataResponse>> = [];
+  let gameData: GameData[] = [];
+  const batchedGames = 60;
+  let gameCount = 1;
+  logMessage("INFO", `Number of Games: ${collectionData.items.item.length}`);
 
-  // Process games concurrently using Promise.all
   for (const game of collectionData.items.item) {
+    if (gameCount === 1) {
+      gameDataRequest.length = 0; // Reset the batch
+    }
+
     gameDataRequest.push(processGame(game));
+
+    if (gameCount === batchedGames) {
+      // Process the full batch
+      await processBatch(gameDataRequest, gameData);
+      gameCount = 1; // Reset gameCount for the next batch
+    } else {
+      gameCount++;
+    }
   }
 
-  let gameDataResponse;
-  try {
-    gameDataResponse = await Promise.allSettled(gameDataRequest);
-  } catch (error) {
-    return {
-      data: "",
-      successOrFailure: "FAIL",
-      message: "Processing of individual game promises failed!",
-    };
+  if (gameCount > 1) {
+    await processBatch(gameDataRequest, gameData);
   }
-  const gameData: GameData[] = gameDataResponse
-    .filter(
-      (result): result is PromiseFulfilledResult<DataResponse> =>
-        result.status === "fulfilled",
-    )
-    .map((result) => JSON.parse(result.value.data));
-  gameDataResponse
-    .filter(
-      (result): result is PromiseRejectedResult => result.status === "rejected",
-    )
-    .forEach((result, index) =>
-      logMessage(
-        "ERROR",
-        `Game processing failed for game ${collectionData.items.item[index]!.name._text}. Reason:`,
-        result.reason,
-      ),
-    );
 
   // Further processing or file writing can be done here based on gameResults
   const writableGameData = JSON.stringify(gameData);

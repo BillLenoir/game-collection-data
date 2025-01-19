@@ -1,4 +1,3 @@
-import { games } from "./data/gameOnlyData.js";
 import type { Cursor, DbReturnedGame } from "./data-types.js";
 import { getListOfGameIds, findGames } from "./repository.js";
 import {
@@ -57,12 +56,9 @@ export const resolvers: Resolvers = {
       if (gameId) {
         listOfGameIds = await getListOfGameIds(filter, sort);
         if (listOfGameIds) {
-          startIndex = listOfGameIds.findIndex((game) => game.id === gameId);
+          startIndex =
+            listOfGameIds.findIndex((game) => game.id === gameId) ?? 0;
         }
-      }
-
-      if (startIndex === -1) {
-        throw new Error("Game ID not found!");
       }
 
       const gameList: DbReturnedGame[] = await findGames(
@@ -189,148 +185,6 @@ export const resolvers: Resolvers = {
         nextCursor: nextCursor,
         lastCursor: lastCursor,
         games: gameNodes as GameNode[],
-      };
-
-      return returnObject;
-    },
-
-    findGamesJson(_parent, args: { cursor: string }): GameConnection {
-      // Parsing the arguments
-      const input: Cursor = JSON.parse(atob(args.cursor));
-
-      // Filtering the list of games
-      let filteredGames = games.filter(filterCheck(input.f));
-
-      // Sorting the list of games
-      // Sort by ID
-      if (input.s === "id") {
-        filteredGames.sort((a, b) => a.id - b.id);
-        // Sort by title
-      } else if (input.s === "title") {
-        // This sorts the filtered games by title made uppercase.
-        filteredGames.sort((a, b) => {
-          const gameA = a.title?.toUpperCase() ?? "";
-          const gameB = b.title?.toUpperCase() ?? "";
-          if (gameA < gameB) {
-            return -1;
-          }
-          if (gameA > gameB) {
-            return 1;
-          }
-          return 0;
-        });
-        // Sort by year published
-      } else if (input.s === "yearpublished") {
-        // Sorts the games by year published.
-        filteredGames.sort(
-          (a, b) => (a.yearpublished ?? 0) - (b.yearpublished ?? 0),
-        );
-        // Should be one of the previous three sort types
-      } else {
-        throw new Error("Something wrong with selected sort!");
-      }
-
-      // Get the requested number of games, starting at the cursor's location
-      let from: number = 0;
-      let to: number = 0;
-      let cursorGame: Game | null = null;
-      let limit: number = input.l;
-      // If a game's ID has been included, see if it is in the
-      // filtered and sorted list.
-      if (input.i !== null) {
-        cursorGame = filteredGames.find((game) => game.id === input.i) ?? null;
-      }
-      // If we found the identified game, we start the returned list at that point
-      if (cursorGame !== null) {
-        from = filteredGames.indexOf(cursorGame);
-      }
-
-      // Check to see how many games remain on the list after the identified game
-      // Cannot return more games than remain on the list!
-      if (from + limit <= filteredGames.length - 1) {
-        to = from + limit;
-      } else {
-        to = filteredGames.length;
-      }
-
-      // Assemble the requested game info
-      const returnedGames = filteredGames.slice(from, to);
-
-      // Need to gather the varous cursors we will be returning
-      let firstCursor: string | null = null;
-      let prevCursor: string | null = null;
-      let nextCursor: string | null = null;
-      let lastCursor: string | null = null;
-
-      // The first "page"
-      if (from >= limit * 2) {
-        firstCursor = getEncodedCursor(null, input.l, input.s, input.f);
-      }
-
-      // The previous "page"
-      if (from >= limit && filteredGames[from - limit] !== undefined) {
-        const prevId = filteredGames[from - limit];
-        if (prevId === undefined) {
-          throw new Error("No such game. Cannot build a previous page cursor!");
-        } else {
-          prevCursor = getEncodedCursor(prevId.id, input.l, input.s, input.f);
-        }
-      }
-
-      // The next "page"
-      if (from <= filteredGames.length - limit - 1) {
-        const nextId = filteredGames[from + limit];
-        if (nextId === undefined) {
-          throw new Error("No such game. Cannot build a next page cursor!");
-        } else {
-          nextCursor = getEncodedCursor(nextId.id, input.l, input.s, input.f);
-        }
-      }
-
-      // The last "page"
-      if (from <= filteredGames.length - limit * 2 - 1) {
-        const lastId = filteredGames[filteredGames.length - limit];
-        if (lastId === undefined) {
-          throw new Error("No such game. Cannot build a last page cursor!");
-        } else {
-          lastCursor = getEncodedCursor(lastId.id, input.l, input.s, input.f);
-        }
-      }
-
-      // Assemble data for each returned game
-      const gameNodes: GameNode[] = [];
-      let gameCursor;
-      let returnedGameNode: GameNode;
-      for (let i = 0; i < returnedGames.length; i++) {
-        const returnedGameId = returnedGames[i];
-        if (returnedGameId === undefined) {
-          throw new Error("No such game. Cannot build a returned game cursor!");
-        } else {
-          gameCursor = getEncodedCursor(
-            returnedGameId.id,
-            input.l,
-            input.s,
-            input.f,
-          );
-        }
-        const thisGame = returnedGames[i];
-        if (thisGame === undefined) {
-          throw new Error("There is no game to add to the returnedGameNode!");
-        } else {
-          returnedGameNode = { game: thisGame, cursor: gameCursor };
-          gameNodes.push(returnedGameNode);
-        }
-      }
-
-      // Assemble the whole payload
-      let returnObject: GameConnection = {
-        totalCount: filteredGames.length,
-        gameNumber: from,
-        firstCursor: firstCursor,
-        prevCursor: prevCursor,
-        nextCursor: nextCursor,
-        lastCursor: lastCursor,
-        games: gameNodes,
       };
 
       return returnObject;

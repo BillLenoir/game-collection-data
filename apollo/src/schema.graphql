@@ -6,7 +6,6 @@
 type Query {
   # Return a list of games 
   findGames(cursor: String!): GameConnection
-  findGamesJson(cursor: String!): GameConnection
 }
 
 type GameConnection {
@@ -22,20 +21,6 @@ type GameConnection {
 type GameNode {
   game: Game!
   cursor: String!
-}
-
-type GameJson {
-  id: String!
-  title: String!
-  yearpublished: String
-  thumbnail: String
-  publisher: [String]
-  designer: [String]
-  description: String
-  gameown: Boolean
-  gamewanttobuy: Boolean
-  gameprevowned: Boolean
-  gamefortrade: Boolean
 }
 
 type Game {
