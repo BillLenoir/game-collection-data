@@ -40,10 +40,10 @@ export async function hydrateDatabase(
 
   // Insert Games
   const insertedGames = await insertGames(parsedCollectionData.gameData);
-  if (!insertedGames || insertedGames.successOrFailure === "FAIL") {
+  if (!insertedGames || insertedGames.ok === "FAIL") {
     return {
       data: "",
-      successOrFailure: "FAIL",
+      ok: "FAIL",
       message: `Insertion of games failed! ${insertedGames.message}`,
     };
   } else {
@@ -54,10 +54,10 @@ export async function hydrateDatabase(
   const insertedEntities = await insertEntities(
     parsedCollectionData.entityData,
   );
-  if (!insertedEntities || insertedEntities.successOrFailure === "FAIL") {
+  if (!insertedEntities || insertedEntities.ok === "FAIL") {
     return {
       data: "",
-      successOrFailure: "FAIL",
+      ok: "FAIL",
       message: `Insertion of entities failed! ${insertedEntities.message}`,
     };
   } else {
@@ -69,10 +69,10 @@ export async function hydrateDatabase(
 
   // Insert Role
   const insertedRoles = await insertRoles(parsedCollectionData.roleData);
-  if (!insertedRoles || insertedRoles.successOrFailure === "FAIL") {
+  if (!insertedRoles || insertedRoles.ok === "FAIL") {
     return {
       data: "",
-      successOrFailure: "FAIL",
+      ok: "FAIL",
       message: `Insertion of roles failed! ${insertedRoles.message}`,
     };
   } else {
@@ -89,7 +89,7 @@ export async function hydrateDatabase(
   ) {
     return {
       data: "",
-      successOrFailure: "FAIL",
+      ok: "FAIL",
       message: `${insertedRelationships.message}\n${insertedRelationships.data}\n\n`,
     };
   } else {
@@ -101,7 +101,7 @@ export async function hydrateDatabase(
 
   return {
     data: "",
-    successOrFailure: "SUCCESS",
+    ok: "SUCCESS",
     message: "Successfully hydrated the database!",
   };
 }
@@ -132,7 +132,7 @@ const insertGames = async (games: GameData[]): Promise<DataResponse> => {
   }
   return {
     data: "",
-    successOrFailure: "SUCCESS",
+    ok: "SUCCESS",
     message: `Number of games inserted: ${gamesInserted.length}`,
   };
 };
@@ -153,7 +153,7 @@ const insertEntities = async (
   }
   return {
     data: "",
-    successOrFailure: "SUCCESS",
+    ok: "SUCCESS",
     message: `Number of entities inserted: ${entitiesInserted.length}`,
   };
 };
@@ -171,7 +171,7 @@ const insertRoles = async (roles: RoleData[]): Promise<DataResponse> => {
   }
   return {
     data: "",
-    successOrFailure: "SUCCESS",
+    ok: "SUCCESS",
     message: `Number of entities inserted: ${rolesInserted.length}`,
   };
 };

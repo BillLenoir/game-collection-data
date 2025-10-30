@@ -1,5 +1,5 @@
+import { fetchData } from "./fetch-bgg-data.service";
 import type { DataResponse } from "./utils/data.types";
-import { fetchData } from "./utils/fetch-data";
 
 export async function getGameData(bggGameId: string): Promise<DataResponse> {
   let gameResponse;
@@ -8,19 +8,19 @@ export async function getGameData(bggGameId: string): Promise<DataResponse> {
   } catch (error) {
     return {
       data: "",
-      successOrFailure: "FAIL",
+      ok: "FAIL",
       message: JSON.stringify(error),
     };
   }
 
-  if (!gameResponse || gameResponse.successOrFailure === "FAIL") {
+  if (!gameResponse || gameResponse.ok === "FAIL") {
     let thisMessage = `Something went wrong with the internal fetchData call for ID: ${bggGameId}.`;
     if (gameResponse.message) {
       thisMessage = gameResponse.message;
     }
     return {
       data: "",
-      successOrFailure: "FAIL",
+      ok: "FAIL",
       message: thisMessage,
     };
   }

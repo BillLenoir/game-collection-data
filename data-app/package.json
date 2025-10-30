@@ -19,6 +19,7 @@
     "watch": "npx projen watch"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
     "@tsconfig/node18": "^18.2.4",
     "@types/jest": "^29.5.13",
     "@types/node": "^18",

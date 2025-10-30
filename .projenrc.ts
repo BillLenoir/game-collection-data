@@ -111,7 +111,7 @@ const data = new TmsTypeScriptAppProject({
 });
 
 data.addDeps("node-fetch", "@prisma/client", "xml-js", "zod");
-data.addDevDeps("prisma");
+data.addDevDeps("prisma", "@jest/globals");
 
 // This MUST be last and only called once
 project.synth();

@@ -457,78 +457,60 @@ export const validBggGameDataFromCollection: BggGameDataFromCollection = {
 };
 
 // Responses
-export const fetchBggTryAgainResponse: DataResponse = {
-  data: "",
-  successOrFailure: "FAIL",
-  message:
-    "Your request for this collection has been accepted and will be processed.  Please try again later for access.",
-};
-
 export const fetchCollectionDataSuccessResponse: DataResponse = {
+  ok: true,
   data: validCollectionXMLOneGame,
-  successOrFailure: "SUCCESS",
   message: "Received a response from BGG!",
 };
 
 export const fetchGameDataSuccessResponse: DataResponse = {
+  ok: true,
   data: validGameXML,
-  successOrFailure: "SUCCESS",
   message: "Received a response from BGG!",
 };
 
-export const fetchTryFailedFetchResponse: DataResponse = {
-  data: "",
-  successOrFailure: "FAIL",
-  message: "An error occurred during the fetch",
-};
-
 export const getGameDataFailFormatCollectionDataResponse: DataResponse = {
-  data: "",
-  successOrFailure: "FAIL",
+  ok: false,
   message:
     "Problem getting data for ¡Apuren el Corralito!: The Second Battle of Alihuatá, December 1933.",
 };
 
 export const getGameDataFailGetCollectionDataResponse: DataResponse = {
-  data: "",
-  successOrFailure: "FAIL",
+  ok: false,
   message: "No response from BGG call.",
 };
 
 export const getGameDataFailGetGameDataResponse: DataResponse = {
-  data: "",
-  successOrFailure: "FAIL",
+  ok: false,
   message: "Did not receive a response from BGG!",
 };
 
 export const getGameDataGameSuccessResponse: DataResponse = {
+  ok: true,
   data: validGameXML,
-  successOrFailure: "SUCCESS",
   message: "Received a response from BGG!",
 };
 
 export const getGameDataCollectionSuccessResponse: DataResponse = {
+  ok: true,
   data: validCollectionXMLOneGame,
-  successOrFailure: "SUCCESS",
   message: "Received a response from BGG!",
 };
 
 export const getGameDataTryFailFormatCollectionDataResponse: DataResponse = {
-  data: "",
-  successOrFailure: "FAIL",
+  ok: false,
   message:
     "getGameData for ¡Apuren el Corralito!: The Second Battle of Alihuatá, December 1933 failed.\nMESSAGE: getGameData Failed",
 };
 
 export const getGameDataTryFailGetGameDataResponse: DataResponse = {
-  data: "",
-  successOrFailure: "FAIL",
+  ok: false,
   message: "Did not receive a response from BGG!",
 };
 
 export const processGameSuccessResponse: DataResponse = {
   data: JSON.stringify(validBggGameDataFromCollection),
-  successOrFailure: "SUCCESS",
+  ok: true,
   message: "Game data processed successfully",
 };
 

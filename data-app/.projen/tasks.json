@@ -153,13 +153,13 @@
       },
       "steps": [
         {
-          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@tsconfig/node18,@types/jest,esbuild,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,jest,prettier,prisma,ts-jest,typescript,@prisma/client,node-fetch,xml-js,zod"
+          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@jest/globals,@tsconfig/node18,@types/jest,esbuild,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,jest,prettier,prisma,ts-jest,typescript,@prisma/client,node-fetch,xml-js,zod"
         },
         {
           "exec": "npm install"
         },
         {
-          "exec": "npm update @tsconfig/node18 @types/jest @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser esbuild eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint jest jest-junit prettier prisma ts-jest ts-node typescript @prisma/client node-fetch xml-js zod"
+          "exec": "npm update @jest/globals @tsconfig/node18 @types/jest @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser esbuild eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint jest jest-junit prettier prisma ts-jest ts-node typescript @prisma/client node-fetch xml-js zod"
         },
         {
           "exec": "npx projen"

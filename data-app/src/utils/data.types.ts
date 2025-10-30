@@ -1,16 +1,44 @@
 import { z } from "zod";
 
 // ENUMS
-export const SuccessOrFailureZ = z.enum(["SUCCESS", "FAIL"]);
-export type SuccessOrFailure = z.infer<typeof SuccessOrFailureZ>;
-
 export const LogMessageTypeZ = z.enum(["ERROR", "HAPPY", "INFO", "WARNING"]);
 export type LogMessageType = z.infer<typeof LogMessageTypeZ>;
 
 // SYSTEM COMMUNICATION TYPES
+
+export type StepFunction<I> = (input: I) => Promise<DataResponse>;
+
+export type Xml2jsonInput = {
+  xml: string;
+  options: { compact: boolean; spaces?: number };
+};
+
+export const GoodDataResponseZ = z
+  .object({
+    ok: z.literal(true),
+    data: z.string(),
+    message: z.string(),
+  })
+  .strict();
+export type GoodDataResponse = z.infer<typeof GoodDataResponseZ>;
+
+export const BadDataResponseZ = z
+  .object({
+    ok: z.literal(false),
+    message: z.string(),
+  })
+  .strict();
+export type BadDataResponse = z.infer<typeof BadDataResponseZ>;
+
+export const DataResponseSchema = z.discriminatedUnion("ok", [
+  GoodDataResponseZ,
+  BadDataResponseZ,
+]);
+export type DataResponse = z.infer<typeof DataResponseSchema>;
+
 export const DataPrepConfigsZ = z.object({
-  bggUser: z.string(),
-  needToFetch: z.boolean(),
+  bggUserId: z.string(),
+  needToFetchFromBgg: z.boolean(),
   whereToSave: z.enum(["Locally", "S3"]),
   localData: z.object({
     dataDirectory: z.string(),
@@ -20,15 +48,13 @@ export const DataPrepConfigsZ = z.object({
     roleDataFile: z.string(),
     relationshipDataFile: z.string(),
   }),
+  retry: z.object({
+    numberOfRetries: z.number(),
+    delayInMs: z.number(),
+    queuedMessage: z.string(),
+  }),
 });
 export type DataPrepConfigs = z.infer<typeof DataPrepConfigsZ>;
-
-export const DataResponseZ = z.object({
-  data: z.string(),
-  successOrFailure: SuccessOrFailureZ,
-  message: z.string(),
-});
-export type DataResponse = z.infer<typeof DataResponseZ>;
 
 export const ExtractedEntityZ = z.object({
   id: z.string(),

@@ -1,19 +1,12 @@
 import { type DataPrepConfigs } from "./data.types";
 
 export const dataConfigs: DataPrepConfigs = {
-  // The id for the BGG user
-  bggUser: "BillLenoir",
+  bggUserId: "BillLenoir",
 
-  // When set to false, the system will NOT hit the BGG API, but will use the already saved data
-  needToFetch: true,
+  needToFetchFromBgg: true,
 
-  // LOCAL: database will be saved locally
-  // AWS: database will be saved to s3 bucket
   whereToSave: "Locally",
 
-  // TODO: S3 bucket info
-
-  // Settings for saving data locally
   localData: {
     dataDirectory: "./src/data/",
     rawResponseFile: "./src/data/rawResponse.xml",
@@ -21,5 +14,12 @@ export const dataConfigs: DataPrepConfigs = {
     entityDataFile: "./src/data/entity-data.json",
     roleDataFile: "./src/data/role-data.json",
     relationshipDataFile: "./src/data/relationship-data.json",
+  },
+
+  retry: {
+    numberOfRetries: 1,
+    delayInMs: 10000,
+    queuedMessage:
+      "Your request for this collection has been accepted and will be processed",
   },
 };
