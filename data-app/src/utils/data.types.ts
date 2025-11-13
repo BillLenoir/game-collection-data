@@ -1,115 +1,118 @@
 import { z } from "zod";
 
-// ENUMS
-export const LogMessageTypeZ = z.enum(["ERROR", "HAPPY", "INFO", "WARNING"]);
-export type LogMessageType = z.infer<typeof LogMessageTypeZ>;
+// ENUMS (that aren't enums because I don't use enums)
+export type LogMessageType = "ERROR" | "HAPPY" | "INFO" | "WARNING";
 
 // SYSTEM COMMUNICATION TYPES
 
-export type StepFunction<I> = (input: I) => Promise<DataResponse>;
+export type StepFunction<I, T> = (input: I) => Promise<DataResponse<T>>;
 
-export type Xml2jsonInput = {
-  xml: string;
-  options: { compact: boolean; spaces?: number };
+export type GoodDataResponse<T> = {
+  ok: true;
+  data: T;
+  message: string;
 };
 
-export const GoodDataResponseZ = z
-  .object({
-    ok: z.literal(true),
-    data: z.string(),
-    message: z.string(),
-  })
-  .strict();
-export type GoodDataResponse = z.infer<typeof GoodDataResponseZ>;
+export type BadDataResponse = {
+  ok: false;
+  message: string;
+};
 
-export const BadDataResponseZ = z
-  .object({
-    ok: z.literal(false),
-    message: z.string(),
-  })
-  .strict();
-export type BadDataResponse = z.infer<typeof BadDataResponseZ>;
+export type DataResponse<T = string> = GoodDataResponse<T> | BadDataResponse;
 
-export const DataResponseSchema = z.discriminatedUnion("ok", [
-  GoodDataResponseZ,
-  BadDataResponseZ,
-]);
-export type DataResponse = z.infer<typeof DataResponseSchema>;
+export type DataPrepConfigs = {
+  bggUserId: string;
+  needToFetchFromBgg: boolean;
+  whereToSave: "Locally" | "S3";
+  localData: {
+    dataDirectory: string;
+    rawResponseFile: string;
+    gameDataFile: string;
+    entityDataFile: string;
+    roleDataFile: string;
+    relationshipDataFile: string;
+  };
+  retry: {
+    numberOfRetries: number;
+    delayInMs: number;
+    queuedMessage: string;
+  };
+  numberOfGamesInBatch: number;
+  rolesToExtract: Record<string, string>;
+};
 
-export const DataPrepConfigsZ = z.object({
-  bggUserId: z.string(),
-  needToFetchFromBgg: z.boolean(),
-  whereToSave: z.enum(["Locally", "S3"]),
-  localData: z.object({
-    dataDirectory: z.string(),
-    rawResponseFile: z.string(),
-    gameDataFile: z.string(),
-    entityDataFile: z.string(),
-    roleDataFile: z.string(),
-    relationshipDataFile: z.string(),
-  }),
-  retry: z.object({
-    numberOfRetries: z.number(),
-    delayInMs: z.number(),
-    queuedMessage: z.string(),
-  }),
-});
-export type DataPrepConfigs = z.infer<typeof DataPrepConfigsZ>;
+export type FetchDataFromBggInput = {
+  path: string;
+  parameters: string | number;
+};
 
-export const ExtractedEntityZ = z.object({
-  id: z.string(),
-  bggId: z.string(),
-  name: z.string(),
-  role: z.string(),
-  existingEntity: z.boolean(),
-});
-export type ExtractedEntity = z.infer<typeof ExtractedEntityZ>;
+export type SaveBggDataInput = {
+  dataToSave: string;
+  directory: string;
+  fileName: string;
+};
 
-export const ExtractedEntitiesZ = z.array(ExtractedEntityZ);
-export type ExtractedEntities = z.infer<typeof ExtractedEntitiesZ>;
+export type ConvertBggDataInput = {
+  xml: string;
+  options: {
+    compact: boolean;
+    spaces: number;
+  };
+};
+
+export type FormatGameDataInput = {
+  gameId: string;
+  collectionData: BggGameDataFromCollection;
+  gameData: BggGameDataFromSingleCall;
+};
 
 // INTERNAL DATA TYPES
-export const EntityDataZ = z.object({
-  id: z.string(),
-  bggId: z.string(),
-  name: z.string(),
-});
-export type EntityData = z.infer<typeof EntityDataZ>;
+export type ExtractedEntity = {
+  bggId: string;
+  name: string;
+  role: string;
+};
 
-export const GameDataZ = z.object({
-  id: z.string(),
-  bggId: z.string(),
-  title: z.string(),
-  yearpublished: z.string(),
-  thumbnail: z.string(),
-  description: z.string(),
-  gameown: z.boolean(),
-  gamewanttobuy: z.boolean(),
-  gameprevowned: z.boolean(),
-  gamefortrade: z.boolean(),
-});
-export type GameData = z.infer<typeof GameDataZ>;
+export type ExtractedEntities = ExtractedEntity[];
 
-export const RoleDataZ = z.object({
-  id: z.string(),
-  name: z.string(),
-});
-export type RoleData = z.infer<typeof RoleDataZ>;
+export type EntityData = {
+  id: string;
+  bggId: string;
+  name: string;
+};
 
-export const RelationshipDataZ = z.object({
-  gameId: z.string(),
-  entityId: z.string(),
-  roleId: z.string(),
-});
-export type RelationshipData = z.infer<typeof RelationshipDataZ>;
+export type Entities = EntityData[];
 
-export const EntityGameDataSaveZ = z.object({
-  gameData: z.array(GameDataZ),
-  entityData: z.array(EntityDataZ),
-  roleData: z.array(RoleDataZ),
-  relationshipData: z.array(RelationshipDataZ),
-});
-export type EntityGameDataSave = z.infer<typeof EntityGameDataSaveZ>;
+export type GameData = {
+  id: string;
+  bggId: string;
+  title: string;
+  yearPublished: string;
+  thumbnail: string;
+  description: string;
+  own: boolean;
+  wantToBuy: boolean;
+  previouslyOwned: boolean;
+  forTrade: boolean;
+};
+
+export type RoleData = {
+  id: string;
+  name: string;
+};
+
+export type RelationshipData = {
+  gameId: string;
+  entityId: string;
+  roleId: string;
+};
+
+export type EntityGameDataSave = {
+  gameData: [GameData];
+  entityData: [EntityData];
+  roleData: [RoleData];
+  relationshipData: [RelationshipData];
+};
 
 // BGG DATA TYPES
 const AttributesZ = z.object({

@@ -1,57 +1,73 @@
 import { convertBggData } from "./convert-bgg-data.service";
-import { fetchDataFromBgg } from "./fetch-bgg-data.service";
-import { formatCollectionDataOrchestrator } from "./format-collection-data";
+import { fetchCollectionDataFromBgg } from "./fetch-bgg-collection-data.service";
 import { hydrateDatabase } from "./hydrate-database";
 import { saveBggData } from "./save-bgg-data.service";
 import { dataConfigs } from "./utils/data.config";
+import type {
+  BggCollectionData,
+  ConvertBggDataInput,
+  FetchDataFromBggInput,
+  SaveBggDataInput,
+} from "./utils/data.types";
 import { runStepFunction } from "./utils/run-step-function";
 
-export async function collectionDataOrchestrator(): Promise<void> {
+export const collectionDataOrchestrator = async (): Promise<void> => {
   // FETCH BGG COLLECTION DATA
-  const fetchBggDataParameters = {
+  const fetchCollectionDataFromBggInput: FetchDataFromBggInput = {
     path: "collection",
     parameters: dataConfigs.bggUserId,
   };
-  const fetchBggDataResponse = await runStepFunction(
+  const fetchCollectionDataFromBggResponse = await runStepFunction(
     "Fetch BGG Collection Data",
-    fetchDataFromBgg,
-    fetchBggDataParameters,
+    fetchCollectionDataFromBgg,
+    fetchCollectionDataFromBggInput,
   );
-  if (!fetchBggDataResponse) return;
+  if (!fetchCollectionDataFromBggResponse) return;
 
   // SAVE BGG COLLECTION DATA
+  const saveBggDataInput: SaveBggDataInput = {
+    dataToSave: fetchCollectionDataFromBggResponse,
+    directory: dataConfigs.localData.dataDirectory,
+    fileName: dataConfigs.localData.rawResponseFile,
+  };
   const saveBggDataResponse = await runStepFunction(
     "Save BGG Collection Data",
     saveBggData,
-    fetchBggDataResponse,
+    saveBggDataInput,
   );
   if (!saveBggDataResponse) return;
 
   // CONVERT BGG COLLECTION DATA
-  const convertBggDataInput = {
-    xml: fetchBggDataResponse,
+  const convertBggDataInput: ConvertBggDataInput = {
+    xml: fetchCollectionDataFromBggResponse,
     options: { compact: true, spaces: 2 },
   };
-  const convertBggDataResponse = await runStepFunction(
-    "Convert BGG Collection Data",
-    convertBggData,
-    convertBggDataInput,
-  );
+  const convertBggDataResponse: BggCollectionData | void =
+    await runStepFunction<ConvertBggDataInput, BggCollectionData>(
+      "Convert BGG Collection Data",
+      convertBggData,
+      convertBggDataInput,
+    );
   if (!convertBggDataResponse) return;
 
   // FORMAT CONVERTED COLLECTION DATA
-  const formatDataResponse = await runStepFunction(
+  const formatCollectionDataResponse = await runStepFunction(
     "Format Collection Data",
-    formatCollectionDataOrchestrator,
-    fetchBggDataResponse,
+    formatCollectionData,
+    convertBggDataResponse,
   );
-  if (!formatDataResponse) return;
+  if (!formatCollectionDataResponse) return;
 
   // SAVE FORMATTED COLLECTION DATA
+  const saveFormattedDataResponseInput: SaveBggDataInput = {
+    dataToSave: formatCollectionDataResponse,
+    directory: dataConfigs.localData.dataDirectory,
+    fileName: dataConfigs.localData.gameDataFile,
+  };
   const saveFormattedDataResponse = await runStepFunction(
     "Save BGG Collection Data",
     saveBggData,
-    formatDataResponse,
+    saveFormattedDataResponseInput,
   );
   if (!saveFormattedDataResponse) return;
 
@@ -59,6 +75,6 @@ export async function collectionDataOrchestrator(): Promise<void> {
   await runStepFunction(
     "Hydrate Collection Data",
     hydrateDatabase,
-    formatDataResponse,
+    formatCollectionDataResponse,
   );
-}
+};

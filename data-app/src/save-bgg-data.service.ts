@@ -1,13 +1,14 @@
 import fs from "fs/promises";
-import { dataConfigs } from "./utils/data.config";
-import type { DataResponse } from "./utils/data.types";
+import type { DataResponse, SaveBggDataInput } from "./utils/data.types";
 
-export async function saveBggData(dataToSave: string): Promise<DataResponse> {
-  const { dataDirectory, rawResponseFile } = dataConfigs.localData;
-
+export const saveBggData = async ({
+  dataToSave,
+  directory,
+  fileName,
+}: SaveBggDataInput): Promise<DataResponse> => {
   try {
-    await fs.mkdir(dataDirectory, { recursive: true });
-    await fs.writeFile(rawResponseFile, dataToSave);
+    await fs.mkdir(directory, { recursive: true });
+    await fs.writeFile(fileName, dataToSave);
     return {
       ok: true,
       data: "No data to report",
@@ -19,4 +20,4 @@ export async function saveBggData(dataToSave: string): Promise<DataResponse> {
       message: error instanceof Error ? error.message : JSON.stringify(error),
     };
   }
-}
+};

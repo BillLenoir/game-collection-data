@@ -1,4 +1,4 @@
-import * as steps from "../src/fetch-bgg-data.service";
+import * as steps from "../src/fetch-bgg-collection-data.service";
 import * as fetcher from "../src/utils/bgg-api-client";
 import * as logger from "../src/utils/log-messages";
 import { runStepFunction } from "../src/utils/run-step-function";
@@ -8,7 +8,7 @@ global.fetch = mockFetch;
 
 let spyLogMessage: jest.SpiedFunction<typeof logger.logMessage>;
 let spyCallToCallTheActualFetchCall: jest.SpiedFunction<
-  typeof steps.fetchDataFromBgg
+  typeof steps.fetchCollectionDataFromBgg
 >;
 let spyActualFetchCall: jest.SpiedFunction<typeof fetcher.callBggApi>;
 
@@ -40,7 +40,7 @@ describe("fetchDataFromBgg", () => {
 
       const testResponse = await runStepFunction(
         "test not OK fetch",
-        steps.fetchDataFromBgg,
+        steps.fetchCollectionDataFromBgg,
         testFetchBggDataParameters,
       );
 
@@ -85,7 +85,7 @@ describe("fetchDataFromBgg", () => {
 
       const testResponse = await runStepFunction(
         "test retry fetch",
-        steps.fetchDataFromBgg,
+        steps.fetchCollectionDataFromBgg,
         testFetchBggDataParameters,
       );
 
@@ -114,7 +114,7 @@ describe("fetchDataFromBgg", () => {
 
       const testResponse = await runStepFunction(
         "test successful fetch",
-        steps.fetchDataFromBgg,
+        steps.fetchCollectionDataFromBgg,
         testFetchBggDataParameters,
       );
 
@@ -153,7 +153,7 @@ describe("fetchDataFromBgg", () => {
 
       const testResponse = await runStepFunction(
         "test unexpect response fetch",
-        steps.fetchDataFromBgg,
+        steps.fetchCollectionDataFromBgg,
         testFetchBggDataParameters,
       );
 
@@ -180,7 +180,7 @@ describe("fetchDataFromBgg", () => {
 
       const testResponse = await runStepFunction(
         "test throw Error fetch",
-        steps.fetchDataFromBgg,
+        steps.fetchCollectionDataFromBgg,
         testFetchBggDataParameters,
       );
 

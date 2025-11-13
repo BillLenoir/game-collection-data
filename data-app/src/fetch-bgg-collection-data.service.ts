@@ -1,14 +1,11 @@
 import { callBggApi } from "./utils/bgg-api-client";
 import { dataConfigs } from "./utils/data.config";
-import type { DataResponse } from "./utils/data.types";
+import type { DataResponse, FetchDataFromBggInput } from "./utils/data.types";
 
-export async function fetchDataFromBgg({
+export const fetchCollectionDataFromBgg = async ({
   path,
   parameters,
-}: {
-  path: string;
-  parameters: string | number;
-}): Promise<DataResponse> {
+}: FetchDataFromBggInput): Promise<DataResponse> => {
   const sleep = (waitTimeInMS: number) =>
     new Promise<void>((response) => setTimeout(response, waitTimeInMS));
 
@@ -34,4 +31,4 @@ export async function fetchDataFromBgg({
   }
 
   return bggResponse;
-}
+};

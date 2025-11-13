@@ -116,13 +116,13 @@ const insertGames = async (games: GameData[]): Promise<DataResponse> => {
           id: game.id,
           bggid: game.bggId,
           title: game.title,
-          yearpublished: game.yearpublished,
+          yearpublished: game.yearPublished,
           thumbnail: game.thumbnail,
           description: game.description,
-          gameown: game.gameown,
-          gamewanttobuy: game.gamewanttobuy,
-          gameprevowned: game.gameprevowned,
-          gamefortrade: game.gamefortrade,
+          gameown: game.own,
+          gamewanttobuy: game.wantToBuy,
+          gameprevowned: game.previouslyOwned,
+          gamefortrade: game.forTrade,
         },
       });
     } catch (error) {

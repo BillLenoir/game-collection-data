@@ -22,4 +22,17 @@ export const dataConfigs: DataPrepConfigs = {
     queuedMessage:
       "Your request for this collection has been accepted and will be processed",
   },
+
+  numberOfGamesInBatch: 60,
+
+  rolesToExtract: {
+    boardgameartist: "Artist",
+    boardgamecategory: "Category",
+    boardgamedesigner: "Designer",
+    boardgamedeveloper: "Developer",
+    boardgamefamily: "Family",
+    boardgamemechanic: "Mechanic",
+    boardgamepublisher: "Publisher",
+    boardgamesubdomain: "Subdomain",
+  },
 };

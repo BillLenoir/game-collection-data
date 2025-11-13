@@ -1,18 +1,12 @@
 import convert from "xml-js";
-import { DataResponse } from "./utils/data.types";
+import type { ConvertBggDataInput, DataResponse } from "./utils/data.types";
 
-export const convertBggData = async ({
+export const convertBggData = async <T>({
   xml,
   options,
-}: {
-  xml: string;
-  options: {
-    compact: boolean;
-    spaces: number;
-  };
-}): Promise<DataResponse> => {
+}: ConvertBggDataInput): Promise<DataResponse<T>> => {
   try {
-    const convertedBggData = convert.xml2json(xml, options);
+    const convertedBggData: T = JSON.parse(convert.xml2json(xml, options));
     return {
       ok: true,
       data: convertedBggData,

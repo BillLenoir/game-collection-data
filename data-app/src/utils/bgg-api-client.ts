@@ -1,4 +1,8 @@
-import { BadDataResponse, GoodDataResponse } from "./data.types";
+import type {
+  BadDataResponse,
+  DataResponse,
+  GoodDataResponse,
+} from "./data.types";
 
 export const callBggApi = async ({
   path,
@@ -6,7 +10,7 @@ export const callBggApi = async ({
 }: {
   path: string;
   parameters: string | number;
-}) => {
+}): Promise<DataResponse> => {
   let fetchDataResponse;
   const requestUrl = `https://boardgamegeek.com/xmlapi/${path}/${encodeURIComponent(parameters)}`;
 
@@ -34,7 +38,7 @@ export const callBggApi = async ({
         ok: true,
         data: textBggResponse,
         message: "Received a response from BGG!",
-      } as GoodDataResponse;
+      } as GoodDataResponse<string>;
     } else {
       fetchDataResponse = {
         ok: false,

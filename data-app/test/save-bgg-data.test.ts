@@ -1,11 +1,19 @@
 import fs from "fs";
 import * as steps from "../src/save-bgg-data.service";
+import { dataConfigs } from "../src/utils/data.config";
 import * as logger from "../src/utils/log-messages";
 import { runStepFunction } from "../src/utils/run-step-function";
 
 let spyLogMessage: jest.SpiedFunction<typeof logger.logMessage>;
 let spyMkdir: jest.SpiedFunction<typeof fs.promises.mkdir>;
 let spyWriteFile: jest.SpiedFunction<typeof fs.promises.writeFile>;
+
+const { dataDirectory, rawResponseFile } = dataConfigs.localData;
+const saveBggDataParameters = {
+  dataToSave: "Data to save",
+  directory: dataDirectory,
+  fileName: rawResponseFile,
+};
 
 beforeEach(() => {
   spyLogMessage = jest.spyOn(logger, "logMessage");
@@ -29,7 +37,7 @@ describe("saveData", () => {
       const testResponse = await runStepFunction(
         "test throw Error writeFile",
         steps.saveBggData,
-        "Data to save",
+        saveBggDataParameters,
       );
 
       expect(testResponse).toBeFalsy();
@@ -55,7 +63,7 @@ describe("saveData", () => {
       const testResponse = await runStepFunction(
         "test throw Error mkdir",
         steps.saveBggData,
-        "Data to save",
+        saveBggDataParameters,
       );
 
       expect(testResponse).toBeFalsy();
@@ -77,7 +85,7 @@ describe("saveData", () => {
       const testResponse = await runStepFunction(
         "test save data",
         steps.saveBggData,
-        "Data to save",
+        saveBggDataParameters,
       );
 
       const expectedResponseFromRunStepFunction = "No data to report";

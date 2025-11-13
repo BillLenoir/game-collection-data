@@ -49,7 +49,7 @@ describe("convertBggData", () => {
 
   describe("When convert.xml2json successfully converts the BGG data", () => {
     it("Returns OK true", async () => {
-      spyXml2json.mockReturnValue("Successfully converted the BGG data!");
+      spyXml2json.mockReturnValue(JSON.stringify({ field1: "asdf" }));
 
       const testResponse = await runStepFunction(
         "test successful convert.xml2json",
@@ -57,10 +57,9 @@ describe("convertBggData", () => {
         convertBggDataInput,
       );
 
-      const expectedResponseFromRunStepFunction =
-        "Successfully converted the BGG data!";
+      const expectedResponseFromRunStepFunction = { field1: "asdf" };
 
-      expect(testResponse).toBe(expectedResponseFromRunStepFunction);
+      expect(testResponse).toStrictEqual(expectedResponseFromRunStepFunction);
       expect(spyXml2json).toHaveBeenCalledTimes(1);
       expect(spyLogMessage).toHaveBeenCalledTimes(1);
       expect(spyLogMessage).toHaveBeenCalledWith(
