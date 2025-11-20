@@ -5,12 +5,13 @@ export const runStepFunction = async <I, T>(
   step: string,
   stepFunction: StepFunction<I, T>,
   input: I,
-): Promise<T | void> => {
+): Promise<T | false> => {
   const response: DataResponse<T> = await stepFunction(input);
   if (response.ok) {
     logMessage("HAPPY", `${step} succeeded: ${response.message}`);
-    return response.data;
+    return response.data as T;
   } else {
     logMessage("ERROR", `${step} failed: ${response.message}`);
+    return false;
   }
 };

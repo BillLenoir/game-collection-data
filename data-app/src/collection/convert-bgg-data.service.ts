@@ -1,5 +1,5 @@
 import convert from "xml-js";
-import type { ConvertBggDataInput, DataResponse } from "./utils/data.types";
+import type { ConvertBggDataInput, DataResponse } from "../utils/data.types";
 
 export const convertBggData = async <T>({
   xml,

@@ -1,9 +1,9 @@
-import { dataConfigs } from "./utils/data.config";
+import { dataConfigs } from "../utils/data.config";
 import type {
   BggGameDataFromSingleCallJustTheGame,
   DataResponse,
   ExtractedEntities,
-} from "./utils/data.types";
+} from "../utils/data.types";
 
 export const extractEntities = async (
   gameData: BggGameDataFromSingleCallJustTheGame,

@@ -1,6 +1,6 @@
-import { callBggApi } from "./utils/bgg-api-client";
-import { dataConfigs } from "./utils/data.config";
-import type { DataResponse, FetchDataFromBggInput } from "./utils/data.types";
+import { callBggApi } from "../utils/bgg-api-client";
+import { dataConfigs } from "../utils/data.config";
+import type { DataResponse, FetchDataFromBggInput } from "../utils/data.types";
 
 export const fetchCollectionDataFromBgg = async ({
   path,

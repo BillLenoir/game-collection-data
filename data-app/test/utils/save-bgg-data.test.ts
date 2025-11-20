@@ -1,8 +1,8 @@
 import fs from "fs";
-import * as steps from "../src/save-bgg-data.service";
 import { dataConfigs } from "../src/utils/data.config";
 import * as logger from "../src/utils/log-messages";
 import { runStepFunction } from "../src/utils/run-step-function";
+import * as steps from "../src/utils/save-bgg-data.service";
 
 let spyLogMessage: jest.SpiedFunction<typeof logger.logMessage>;
 let spyMkdir: jest.SpiedFunction<typeof fs.promises.mkdir>;

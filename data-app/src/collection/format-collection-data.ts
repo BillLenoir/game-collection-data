@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import convert from "xml-js";
 import { getGameData } from "./get-game-data";
-import { dataConfigs } from "./utils/data.config";
+import { dataConfigs } from "../utils/data.config";
 import type {
   BggGameDataFromSingleCallJustTheGame,
   ExtractedEntities,
@@ -13,8 +13,8 @@ import type {
   RelationshipData,
   RoleData,
   BggCollectionData,
-} from "./utils/data.types";
-import { logMessage } from "./utils/log-messages";
+} from "../utils/data.types";
+import { logMessage } from "../utils/log-messages";
 
 async function processBatch(
   requests: Array<Promise<DataResponse>>,

@@ -1,8 +1,8 @@
 const mockFetchData = jest.fn();
 
-import { fetchTryFailedFetchResponse } from "./test.data";
+import { DataResponse } from "../../src/utils/data.types";
 import { getGameData } from "../src/get-game-data";
-import { DataResponse } from "../src/utils/data.types";
+import { fetchTryFailedFetchResponse } from "../test.data";
 
 jest.mock("../src/utils/fetch-data.ts", () => ({
   fetchData: mockFetchData,

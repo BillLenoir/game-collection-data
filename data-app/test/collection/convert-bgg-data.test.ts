@@ -1,5 +1,5 @@
 import convert from "xml-js";
-import * as steps from "../src/convert-bgg-data.service";
+import * as steps from "../src/collection/convert-bgg-data.service";
 import * as logger from "../src/utils/log-messages";
 import { runStepFunction } from "../src/utils/run-step-function";
 

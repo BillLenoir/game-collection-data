@@ -2,7 +2,7 @@ import type {
   DataResponse,
   FormatGameDataInput,
   GameData,
-} from "./utils/data.types";
+} from "../utils/data.types";
 
 const asBoolean = (value?: string) => value === "1";
 

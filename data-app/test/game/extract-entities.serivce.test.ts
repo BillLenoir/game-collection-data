@@ -1,9 +1,9 @@
-import { extractEntities } from "../src/extract-entities.service";
+import { extractEntities } from "../../src/game/extract-entities.service";
 import type {
   BggGameDataFromSingleCallJustTheGame,
   DataResponse,
   ExtractedEntities,
-} from "../src/utils/data.types";
+} from "../../src/utils/data.types";
 
 describe("extractEntities", () => {
   const gameWithEntitiesWeWant: BggGameDataFromSingleCallJustTheGame = {

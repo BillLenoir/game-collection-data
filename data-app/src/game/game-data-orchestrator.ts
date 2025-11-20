@@ -1,22 +1,24 @@
-import { convertBggData } from "./convert-bgg-data.service";
 import { extractEntities } from "./extract-entities.service";
 import { formatGameData } from "./format-game-data.service";
-import { saveBggData } from "./save-bgg-data.service";
-import { callBggApi } from "./utils/bgg-api-client";
-import { dataConfigs } from "./utils/data.config";
+import { entityProcessor } from "./process-entities.service";
+import { convertBggData } from "../collection/convert-bgg-data.service";
+import { callBggApi } from "../utils/bgg-api-client";
+import { dataConfigs } from "../utils/data.config";
 import type {
   BggGameDataFromCollection,
   BggGameDataFromSingleCall,
   BggGameDataFromSingleCallJustTheGame,
   ConvertBggDataInput,
   DataResponse,
+  EntityData,
   ExtractedEntities,
   FetchDataFromBggInput,
   FormatGameDataInput,
   GameData,
   SaveBggDataInput,
-} from "./utils/data.types";
-import { runStepFunction } from "./utils/run-step-function";
+} from "../utils/data.types";
+import { runStepFunction } from "../utils/run-step-function";
+import { saveBggData } from "../utils/save-bgg-data.service";
 
 export const gameDataOrchestrator = async (
   gameId: string,
@@ -33,12 +35,11 @@ export const gameDataOrchestrator = async (
     callBggApi,
     fetchGameDataFromBggInput,
   );
-  if (!fetchGameDataFromBggResponse) {
+  if (!fetchGameDataFromBggResponse)
     return {
       ok: false,
       message: "Fetch failed",
     };
-  }
 
   // SAVE BGG GAME DATA
   const saveBggDataInput: SaveBggDataInput = {
@@ -84,22 +85,42 @@ export const gameDataOrchestrator = async (
     collectionData: bggGameDataFromCollection,
     gameData: convertBggDataResponse,
   };
-  const formatDataResponse = await runStepFunction<
-    FormatGameDataInput,
-    GameData
-  >("Format Collection Data", formatGameData, formatBggGameDataInput);
-  if (!formatDataResponse) return;
+  await runStepFunction<FormatGameDataInput, GameData>(
+    "Format Collection Data",
+    formatGameData,
+    formatBggGameDataInput,
+  );
 
   // EXTRACT ENTITIES
-  const extractAndProcessEntitiesInput: BggGameDataFromSingleCallJustTheGame =
+  const extractEntitiesInput: BggGameDataFromSingleCallJustTheGame =
     convertBggDataResponse.boardgames.boardgame;
-  const extractAndProcessEntitiesResponse = await runStepFunction<
+  const extractEntitiesResponse = await runStepFunction<
     BggGameDataFromSingleCallJustTheGame,
     ExtractedEntities
+  >("Extract and Process Entities", extractEntities, extractEntitiesInput);
+  if (!extractEntitiesResponse) {
+    return {
+      ok: false,
+      message: "Extraction of Entities failed",
+    };
+  }
+
+  // PROCESS ENTITIES
+  const processEntitiesInput: ExtractedEntities = extractEntitiesResponse;
+  const processEntitiesResponse = await runStepFunction<
+    ExtractedEntities,
+    ReadonlyArray<EntityData>
   >(
     "Extract and Process Entities",
-    extractEntities,
-    extractAndProcessEntitiesInput,
+    entityProcessor.processExtractedEntitiesStep,
+    processEntitiesInput,
   );
-  if (!extractAndProcessEntitiesResponse) return;
+  if (!processEntitiesResponse) {
+    return {
+      ok: false,
+      message: "Processing of Entities failed",
+    };
+  }
+
+  // PROCESS ROLES
 };

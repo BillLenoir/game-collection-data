@@ -1,5 +1,10 @@
-import type { EntityData, ExtractedEntities } from "./utils/data.types";
-import { idGenerator } from "./utils/generate-id";
+import type {
+  EntityData,
+  ExtractedEntities,
+  DataResponse,
+  StepFunction,
+} from "../utils/data.types";
+import { idGenerator } from "../utils/generate-id";
 
 export class EntityProcessor {
   private processedEntities: EntityData[] = [];
@@ -13,7 +18,6 @@ export class EntityProcessor {
       const name = (extractedEntity.name ?? "").trim();
       const key = this.defaultKeyOf(extractedEntity.bggId, name);
 
-      // We only process entities we haven't seen yet.
       if (this.seen.has(key)) continue;
 
       const newEntity: EntityData = {
@@ -34,6 +38,26 @@ export class EntityProcessor {
     this.processedEntities = [];
     this.seen.clear();
   }
+
+  // 👇 StepFunction-compatible method
+  processExtractedEntitiesStep: StepFunction<
+    ExtractedEntities,
+    ReadonlyArray<EntityData>
+  > = async (extractedEntities) => {
+    // optional: decide whether to clear or accumulate
+    this.clear();
+    this.processExtractedEntities(extractedEntities);
+
+    const result = this.listOfProcessedEntities;
+
+    const response: DataResponse<ReadonlyArray<EntityData>> = {
+      ok: true,
+      data: result,
+      message: `Processed ${result.length} entities`,
+    };
+
+    return response;
+  };
 }
 
 export const entityProcessor = new EntityProcessor();

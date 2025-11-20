@@ -1,5 +1,5 @@
-import { entityProcessor } from "../src/process-entities.service";
-import type { EntityData, ExtractedEntity } from "../src/utils/data.types";
+import { entityProcessor } from "../../src/game/process-entities.service";
+import type { EntityData, ExtractedEntity } from "../../src/utils/data.types";
 
 describe("processExtractedEntities", () => {
   const testEntityProcess = entityProcessor;

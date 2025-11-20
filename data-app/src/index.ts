@@ -1,4 +1,4 @@
-import { collectionDataOrchestrator } from "./collection-data.orchestrator";
+import { collectionDataOrchestrator } from "./collection/collection-data.orchestrator";
 import { logMessage } from "./utils/log-messages";
 
 collectionDataOrchestrator().catch((error) => {

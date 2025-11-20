@@ -1,5 +1,5 @@
 import fs from "fs/promises";
-import type { DataResponse, SaveBggDataInput } from "./utils/data.types";
+import type { DataResponse, SaveBggDataInput } from "./data.types";
 
 export const saveBggData = async ({
   dataToSave,

@@ -1,7 +1,7 @@
+import * as fetcher from "../../src/utils/bgg-api-client";
+import * as logger from "../../src/utils/log-messages";
+import { runStepFunction } from "../../src/utils/run-step-function";
 import * as steps from "../src/fetch-bgg-collection-data.service";
-import * as fetcher from "../src/utils/bgg-api-client";
-import * as logger from "../src/utils/log-messages";
-import { runStepFunction } from "../src/utils/run-step-function";
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch;

@@ -1,15 +1,14 @@
 import { convertBggData } from "./convert-bgg-data.service";
 import { fetchCollectionDataFromBgg } from "./fetch-bgg-collection-data.service";
-import { hydrateDatabase } from "./hydrate-database";
-import { saveBggData } from "./save-bgg-data.service";
-import { dataConfigs } from "./utils/data.config";
+import { dataConfigs } from "../utils/data.config";
 import type {
   BggCollectionData,
   ConvertBggDataInput,
   FetchDataFromBggInput,
   SaveBggDataInput,
-} from "./utils/data.types";
-import { runStepFunction } from "./utils/run-step-function";
+} from "../utils/data.types";
+import { runStepFunction } from "../utils/run-step-function";
+import { saveBggData } from "../utils/save-bgg-data.service";
 
 export const collectionDataOrchestrator = async (): Promise<void> => {
   // FETCH BGG COLLECTION DATA
@@ -42,12 +41,10 @@ export const collectionDataOrchestrator = async (): Promise<void> => {
     xml: fetchCollectionDataFromBggResponse,
     options: { compact: true, spaces: 2 },
   };
-  const convertBggDataResponse: BggCollectionData | void =
-    await runStepFunction<ConvertBggDataInput, BggCollectionData>(
-      "Convert BGG Collection Data",
-      convertBggData,
-      convertBggDataInput,
-    );
+  const convertBggDataResponse = await runStepFunction<
+    ConvertBggDataInput,
+    BggCollectionData
+  >("Convert BGG Collection Data", convertBggData, convertBggDataInput);
   if (!convertBggDataResponse) return;
 
   // FORMAT CONVERTED COLLECTION DATA
