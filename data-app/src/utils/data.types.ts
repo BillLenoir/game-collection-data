@@ -5,8 +5,6 @@ export type LogMessageType = "ERROR" | "HAPPY" | "INFO" | "WARNING";
 
 // SYSTEM COMMUNICATION TYPES
 
-export type StepFunction<I, T> = (input: I) => Promise<DataResponse<T>>;
-
 export type GoodDataResponse<T> = {
   ok: true;
   data: T;
@@ -19,6 +17,11 @@ export type BadDataResponse = {
 };
 
 export type DataResponse<T = string> = GoodDataResponse<T> | BadDataResponse;
+
+// allow sync OR async implementations
+export type StepFunction<I, T> = (
+  input: I,
+) => DataResponse<T> | Promise<DataResponse<T>>;
 
 export type DataPrepConfigs = {
   bggUserId: string;
@@ -66,7 +69,13 @@ export type FormatGameDataInput = {
   gameData: BggGameDataFromSingleCall;
 };
 
+export type ProcessRolesInput = {
+  extractedEntities: ExtractedEntities;
+  gameId: string;
+};
+
 // INTERNAL DATA TYPES
+
 export type ExtractedEntity = {
   bggId: string;
   name: string;
@@ -108,18 +117,67 @@ export type RelationshipData = {
 };
 
 export type EntityGameDataSave = {
-  gameData: [GameData];
-  entityData: [EntityData];
-  roleData: [RoleData];
-  relationshipData: [RelationshipData];
+  gameData: GameData[];
+  entityData: EntityData[];
+  roleData: RoleData[];
+  relationshipData: RelationshipData[];
 };
 
-// BGG DATA TYPES
+// BGG DATA TYPES – SHARED HELPERS
+
 const AttributesZ = z.object({
   _text: z.string(),
 });
+
+// Alias for readability where we care about a simple text node
+const TextNodeZ = AttributesZ;
+
 const ValuesZ = z.object({
   value: z.string(),
+});
+
+// Small helper: value or array of values
+const singleOrArray = <T extends z.ZodTypeAny>(schema: T) =>
+  z.union([schema, z.array(schema)]);
+
+// REGULAR ENTITY
+
+export const BggRegularEntityZ = z.object({
+  _attributes: z.object({
+    objectid: z.string(),
+    inbound: z.string().optional(),
+  }),
+  _text: z.string(),
+});
+export type BggRegularEntity = z.infer<typeof BggRegularEntityZ>;
+
+// Helper for regular-entity relationships
+const RegularEntityOrArrayZ = singleOrArray(BggRegularEntityZ);
+
+// COLLECTION TYPES (multiple games from /collection)
+
+// Common sub-schemas used by collection stats/rating
+
+const RatingMetricZ = z.object({
+  _attributes: ValuesZ,
+});
+
+const CollectionStatsAttributesZ = z.object({
+  minplayers: z.string(),
+  maxplayers: z.string(),
+  minplaytime: z.string(),
+  maxplaytime: z.string(),
+  playingtime: z.string(),
+  numowned: z.string(),
+});
+
+const CollectionRatingZ = z.object({
+  _attributes: ValuesZ,
+  usersrated: RatingMetricZ,
+  average: RatingMetricZ,
+  bayesaverage: RatingMetricZ,
+  stddev: RatingMetricZ,
+  median: RatingMetricZ,
 });
 
 const BggGameDataFromCollectionZ = z.object({
@@ -135,36 +193,12 @@ const BggGameDataFromCollectionZ = z.object({
     }),
     _text: z.string(),
   }),
-  yearpublished: z.optional(AttributesZ),
-  image: AttributesZ,
-  thumbnail: z.optional(AttributesZ),
+  yearpublished: TextNodeZ.optional(),
+  image: TextNodeZ,
+  thumbnail: TextNodeZ.optional(),
   stats: z.object({
-    _attributes: z.object({
-      minplayers: z.string(),
-      maxplayers: z.string(),
-      minplaytime: z.string(),
-      maxplaytime: z.string(),
-      playingtime: z.string(),
-      numowned: z.string(),
-    }),
-    rating: z.object({
-      _attributes: ValuesZ,
-      usersrated: z.object({
-        _attributes: ValuesZ,
-      }),
-      average: z.object({
-        _attributes: ValuesZ,
-      }),
-      bayesaverage: z.object({
-        _attributes: ValuesZ,
-      }),
-      stddev: z.object({
-        _attributes: ValuesZ,
-      }),
-      median: z.object({
-        _attributes: ValuesZ,
-      }),
-    }),
+    _attributes: CollectionStatsAttributesZ,
+    rating: CollectionRatingZ,
   }),
   status: z.object({
     _attributes: z.object({
@@ -179,21 +213,12 @@ const BggGameDataFromCollectionZ = z.object({
       lastmodified: z.string(),
     }),
   }),
-  numplays: AttributesZ,
-  comment: AttributesZ.optional(),
+  numplays: TextNodeZ,
+  comment: TextNodeZ.optional(),
 });
 export type BggGameDataFromCollection = z.infer<
   typeof BggGameDataFromCollectionZ
 >;
-
-export const BggEntityZ = z.object({
-  _attributes: z.object({
-    objectid: z.string(),
-    inbound: z.string().optional(),
-  }),
-  _text: z.string(),
-});
-export type BggEntity = z.infer<typeof BggEntityZ>;
 
 export const BggCollectionDataZ = z.object({
   _declaration: z.object({
@@ -213,6 +238,8 @@ export const BggCollectionDataZ = z.object({
   }),
 });
 export type BggCollectionData = z.infer<typeof BggCollectionDataZ>;
+
+// SINGLE-CALL GAME TYPES (from /boardgame)
 
 export const BggGameNameZ = z.object({
   _attributes: z.object({
@@ -246,67 +273,64 @@ export const PollResultZ = z.union([
 ]);
 export type PollResult = z.infer<typeof PollResultZ>;
 
-export const BggGameDataFromSingleCallJustTheGameZ = z.object({
+// REQUIRED part of the single-call game data: just the id
+const RequiredGameCoreZ = z.object({
   _attributes: z.object({
     objectid: z.string(), // the bggId
   }),
-  yearpublished: z.object({
-    _text: z.string(),
-  }),
-  minplayers: z.object({
-    _text: z.string(),
-  }),
-  maxplayers: z.object({
-    _text: z.string(),
-  }),
-  playingtime: z.object({
-    _text: z.string(),
-  }),
-  minplaytime: z.object({
-    _text: z.string(),
-  }),
-  maxplaytime: z.object({
-    _text: z.string(),
-  }),
-  age: z.object({
-    _text: z.string(),
-  }),
-  name: z.union([BggGameNameZ, z.array(BggGameNameZ)]),
-  description: z.object({
-    _text: z.string(),
-  }),
-  thumbnail: z.object({
-    _text: z.string(),
-  }),
-  image: z.object({
-    _text: z.string(),
-  }),
-  boardgamepublisher: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  boardgamepodcastepisode: z
-    .union([BggEntityZ, z.array(BggEntityZ)])
-    .optional(),
-  boardgameexpansion: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  boardgamehonor: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  boardgameversion: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  cardset: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  boardgameaccessory: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  boardgamefamily: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  videogamebg: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  boardgamecategory: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  boardgamemechanic: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  boardgamedeveloper: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  boardgameartist: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  boardgamedesigner: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  boardgamesubdomain: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  boardgameintegration: z.union([BggEntityZ, z.array(BggEntityZ)]).optional(),
-  poll: z.array(
-    z.object({
-      _attributes: PollAttributesZ,
-      results: z.union([z.array(PollResultZ), z.object({})]),
-    }),
-  ),
-  "poll-summary": z.object({}).optional(),
 });
+
+// OPTIONAL fields for the single-call game data
+const OptionalGameFieldsZ = z
+  .object({
+    // scalar-ish fields
+    yearpublished: TextNodeZ,
+    minplayers: TextNodeZ,
+    maxplayers: TextNodeZ,
+    playingtime: TextNodeZ,
+    minplaytime: TextNodeZ,
+    maxplaytime: TextNodeZ,
+    age: TextNodeZ,
+
+    name: singleOrArray(BggGameNameZ),
+
+    description: TextNodeZ,
+    thumbnail: TextNodeZ,
+    image: TextNodeZ,
+
+    // relationship / entity fields
+    boardgamepublisher: RegularEntityOrArrayZ,
+    boardgamepodcastepisode: RegularEntityOrArrayZ,
+    boardgameexpansion: RegularEntityOrArrayZ,
+    boardgamehonor: RegularEntityOrArrayZ,
+    boardgameversion: RegularEntityOrArrayZ,
+    cardset: RegularEntityOrArrayZ,
+    boardgameaccessory: RegularEntityOrArrayZ,
+    boardgamefamily: RegularEntityOrArrayZ,
+    videogamebg: RegularEntityOrArrayZ,
+    boardgamecategory: RegularEntityOrArrayZ,
+    boardgamemechanic: RegularEntityOrArrayZ,
+    boardgamedeveloper: RegularEntityOrArrayZ,
+    boardgameartist: RegularEntityOrArrayZ,
+    boardgamedesigner: RegularEntityOrArrayZ,
+    boardgamesubdomain: RegularEntityOrArrayZ,
+    boardgameintegration: RegularEntityOrArrayZ,
+
+    poll: z.array(
+      z.object({
+        _attributes: PollAttributesZ,
+        results: z.union([z.array(PollResultZ), z.object({})]),
+      }),
+    ),
+
+    "poll-summary": z.unknown(),
+  })
+  .partial(); // everything in this object is optional
+
+// Final schema for the "just the game" data from a single call
+export const BggGameDataFromSingleCallJustTheGameZ =
+  RequiredGameCoreZ.merge(OptionalGameFieldsZ);
+
 export type BggGameDataFromSingleCallJustTheGame = z.infer<
   typeof BggGameDataFromSingleCallJustTheGameZ
 >;

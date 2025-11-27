@@ -8,6 +8,10 @@ class IdGenerator {
   generateId(): string {
     return String(this.gameId++);
   }
+
+  clear(): void {
+    this.gameId = 1;
+  }
 }
 
 // To make sure there is only ever one instance

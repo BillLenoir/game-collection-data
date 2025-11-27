@@ -1,8 +1,4 @@
-import type {
-  BadDataResponse,
-  DataResponse,
-  GoodDataResponse,
-} from "./data.types";
+import type { DataResponse } from "./data.types";
 
 export const callBggApi = async ({
   path,
@@ -23,7 +19,7 @@ export const callBggApi = async ({
       fetchDataResponse = {
         ok: false,
         message: `BGG returned NOT ok: ${textBggResponse}`,
-      } as BadDataResponse;
+      };
     } else if (
       textBggResponse.includes(
         "Your request for this collection has been accepted and will be processed",
@@ -32,24 +28,24 @@ export const callBggApi = async ({
       fetchDataResponse = {
         ok: false,
         message: `BGG said to try again`,
-      } as BadDataResponse;
+      };
     } else if (textBggResponse.includes("<item")) {
       fetchDataResponse = {
         ok: true,
         data: textBggResponse,
         message: "Received a response from BGG!",
-      } as GoodDataResponse<string>;
+      };
     } else {
       fetchDataResponse = {
         ok: false,
         message: `Received unexpected response from BGG: ${textBggResponse}`,
-      } as BadDataResponse;
+      };
     }
   } catch (error) {
     fetchDataResponse = {
       ok: false,
       message: error instanceof Error ? error.message : JSON.stringify(error),
-    } as BadDataResponse;
+    };
   }
 
   return fetchDataResponse;

@@ -1,6 +1,5 @@
-import { extractEntities } from "./extract-entities.service";
 import { formatGameData } from "./format-game-data.service";
-import { entityProcessor } from "./process-entities.service";
+import { gameRelationshipProcessor } from "./game-relationships-process.service";
 import { convertBggData } from "../collection/convert-bgg-data.service";
 import { callBggApi } from "../utils/bgg-api-client";
 import { dataConfigs } from "../utils/data.config";
@@ -10,8 +9,6 @@ import type {
   BggGameDataFromSingleCallJustTheGame,
   ConvertBggDataInput,
   DataResponse,
-  EntityData,
-  ExtractedEntities,
   FetchDataFromBggInput,
   FormatGameDataInput,
   GameData,
@@ -91,36 +88,21 @@ export const gameDataOrchestrator = async (
     formatBggGameDataInput,
   );
 
-  // EXTRACT ENTITIES
-  const extractEntitiesInput: BggGameDataFromSingleCallJustTheGame =
+  // PROCESS GAME RELATIONSHIPS
+  const processGameRelationshipsInput: BggGameDataFromSingleCallJustTheGame =
     convertBggDataResponse.boardgames.boardgame;
-  const extractEntitiesResponse = await runStepFunction<
+  const processGameRelationshipsResponse = await runStepFunction<
     BggGameDataFromSingleCallJustTheGame,
-    ExtractedEntities
-  >("Extract and Process Entities", extractEntities, extractEntitiesInput);
-  if (!extractEntitiesResponse) {
+    string
+  >(
+    "Process game relationships",
+    gameRelationshipProcessor.processGameRelationships,
+    processGameRelationshipsInput,
+  );
+  if (!processGameRelationshipsResponse) {
     return {
       ok: false,
       message: "Extraction of Entities failed",
     };
   }
-
-  // PROCESS ENTITIES
-  const processEntitiesInput: ExtractedEntities = extractEntitiesResponse;
-  const processEntitiesResponse = await runStepFunction<
-    ExtractedEntities,
-    ReadonlyArray<EntityData>
-  >(
-    "Extract and Process Entities",
-    entityProcessor.processExtractedEntitiesStep,
-    processEntitiesInput,
-  );
-  if (!processEntitiesResponse) {
-    return {
-      ok: false,
-      message: "Processing of Entities failed",
-    };
-  }
-
-  // PROCESS ROLES
 };
