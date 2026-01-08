@@ -1,5 +1,6 @@
-export class Hello {
-  public sayHello() {
-    return 'hello, world!';
-  }
-}
+import { collectionDataOrchestrator } from "./collection/collection-data.orchestrator";
+import { logMessage } from "./utils/log-messages";
+
+collectionDataOrchestrator().catch((error) => {
+  logMessage("ERROR", error instanceof Error ? error.message : String(error));
+});

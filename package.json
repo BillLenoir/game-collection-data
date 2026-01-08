@@ -21,7 +21,8 @@
     "synth-workspace": "npx projen"
   },
   "devDependencies": {
-    "@aws/pdk": "^0.23.49",
+    "@10mi2/tms-projen-projects": "^0.0.39",
+    "@aws/pdk": "^0.25.16",
     "@types/node": "^18",
     "@typescript-eslint/eslint-plugin": "^7",
     "@typescript-eslint/parser": "^7",
@@ -65,6 +66,7 @@
   "private": true,
   "workspaces": {
     "packages": [
+      "apollo",
       "data-app"
     ]
   },

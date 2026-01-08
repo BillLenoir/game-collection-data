@@ -1,0 +1,54 @@
+# When this changes
+# run
+# npx graphql-codegen  
+# from the directory above this <=======================
+
+type Query {
+  # Return a list of games 
+  findGames(cursor: String!): GameConnection
+}
+
+type GameConnection {
+  totalCount: Int!
+  gameNumber: Int!
+  firstCursor: String
+  prevCursor: String
+  nextCursor: String
+  lastCursor: String
+  games: [GameNode]
+}
+
+type GameNode {
+  game: Game!
+  cursor: String!
+}
+
+type Game {
+  id: String!
+  bggid: String!
+  title: String!
+  yearpublished: String
+  thumbnail: String
+  description: String
+  gameown: Boolean
+  gamewanttobuy: Boolean
+  gameprevowned: Boolean
+  gamefortrade: Boolean
+  entitiesByRole: [RoleList]
+}
+
+type RoleList {
+  id: String!
+  role: String!
+  entities: [Entity]
+}
+
+type Entity {
+  id: String!
+  bggid: String!
+  name: String!
+}
+
+type ListSize {
+  gameCount: Int!
+}
