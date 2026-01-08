@@ -3,8 +3,11 @@ import { asFlag } from "../../src/utils/as-flag";
 import type {
   BggGameDataFromCollection,
   BggGameDataFromSingleCall,
+  FormatGameDataInput,
   GameData,
 } from "../../src/utils/data.types";
+import * as logger from "../../src/utils/log-messages";
+import { runStepFunction } from "../../src/utils/run-step-function";
 
 jest.mock("../../src/utils/as-flag", () => ({
   asFlag: jest.fn((value?: string) => value === "1"),
@@ -135,7 +138,7 @@ describe("formatGameData", () => {
       thumbnail: undefined,
     });
 
-    const gameData = makeSingleCallData({
+    const gameDataWithNoDescription = makeSingleCallData({
       boardgames: {
         _attributes: {
           termsofuse: "test-terms",
@@ -144,7 +147,6 @@ describe("formatGameData", () => {
           _attributes: {
             objectid: "123",
           },
-          // description omitted on purpose
         },
       },
     });
@@ -152,7 +154,7 @@ describe("formatGameData", () => {
     const result = formatGameData({
       gameId: "GAME-2",
       collectionData,
-      gameData,
+      gameData: gameDataWithNoDescription,
     });
 
     if (!result.ok) {
@@ -206,5 +208,30 @@ describe("formatGameData", () => {
     expect(data.wantToBuy).toBe(false);
     expect(data.previouslyOwned).toBe(true);
     expect(data.forTrade).toBe(true);
+  });
+});
+
+describe("formatGameData from runStepFunction", () => {
+  let spyLogMessage: jest.SpiedFunction<typeof logger.logMessage>;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    spyLogMessage = jest.spyOn(logger, "logMessage");
+  });
+
+  it("Does not call logger", async () => {
+    const formatBggGameDataInput: FormatGameDataInput = {
+      gameId: "game-1",
+      collectionData: makeCollectionData(),
+      gameData: makeSingleCallData(),
+    };
+
+    await runStepFunction<FormatGameDataInput, GameData>(
+      "Format Collection Data",
+      formatGameData,
+      formatBggGameDataInput,
+    );
+
+    expect(spyLogMessage).not.toHaveBeenCalled();
   });
 });

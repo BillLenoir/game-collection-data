@@ -6,11 +6,9 @@ export const runStepFunction = async <I, T>(
   stepFunction: StepFunction<I, T>,
   input: I,
 ): Promise<DataResponse<T>> => {
-  const response = await stepFunction(input);
+  const response: DataResponse<T> = await stepFunction(input);
 
-  if (response.ok) {
-    logMessage("HAPPY", `${step} succeeded: ${response.message}`);
-  } else {
+  if (!response.ok) {
     logMessage("ERROR", `${step} failed: ${response.message}`);
   }
 

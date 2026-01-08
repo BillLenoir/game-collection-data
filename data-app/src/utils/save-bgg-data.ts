@@ -15,9 +15,10 @@ export const saveBggData = async ({
       message: "Successfully saved the BGG data!",
     };
   } catch (error) {
+    const errorMessage = `saveBggData threw for: ${fileName} - ${error instanceof Error ? error.message : JSON.stringify(error)}`;
     return {
       ok: false,
-      message: error instanceof Error ? error.message : JSON.stringify(error),
+      message: errorMessage,
     };
   }
 };

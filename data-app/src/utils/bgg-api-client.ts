@@ -1,14 +1,10 @@
-import type { DataResponse } from "./data.types";
+import { dataConfigs } from "./data.config";
+import type { DataResponse, bggApiClientInput } from "./data.types";
 
-export const callBggApi = async ({
-  path,
+export const bggApiClient = async ({
   parameters,
-}: {
-  path: string;
-  parameters: string | number;
-}): Promise<DataResponse> => {
-  let fetchDataResponse;
-  const requestUrl = `https://boardgamegeek.com/xmlapi/${path}/${encodeURIComponent(parameters)}`;
+}: bggApiClientInput): Promise<DataResponse> => {
+  const requestUrl = `https://boardgamegeek.com/xmlapi/${dataConfigs.bggUrlPaths.gameData}/${encodeURIComponent(parameters)}`;
 
   try {
     const bggResponse = await fetch(requestUrl);
@@ -16,37 +12,28 @@ export const callBggApi = async ({
     const textBggResponse = await bggResponse.text();
 
     if (!bggResponse.ok) {
-      fetchDataResponse = {
+      return {
         ok: false,
-        message: `BGG returned NOT ok: ${textBggResponse}`,
+        message: `BGG returned NOT ok for ${parameters}: ${textBggResponse}`,
       };
-    } else if (
-      textBggResponse.includes(
-        "Your request for this collection has been accepted and will be processed",
-      ) === true
-    ) {
-      fetchDataResponse = {
-        ok: false,
-        message: `BGG said to try again`,
-      };
-    } else if (textBggResponse.includes("<item")) {
-      fetchDataResponse = {
+    }
+
+    if (textBggResponse.includes("<item")) {
+      return {
         ok: true,
         data: textBggResponse,
         message: "Received a response from BGG!",
       };
-    } else {
-      fetchDataResponse = {
-        ok: false,
-        message: `Received unexpected response from BGG: ${textBggResponse}`,
-      };
     }
+
+    return {
+      ok: false,
+      message: `Received unexpected response from BGG: ${textBggResponse}`,
+    };
   } catch (error) {
-    fetchDataResponse = {
+    return {
       ok: false,
       message: error instanceof Error ? error.message : JSON.stringify(error),
     };
   }
-
-  return fetchDataResponse;
 };

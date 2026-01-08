@@ -10,7 +10,7 @@ let spyLogMessage: jest.SpiedFunction<typeof logger.logMessage>;
 let spyCallToCallTheActualFetchCall: jest.SpiedFunction<
   typeof steps.fetchCollectionDataFromBgg
 >;
-let spyActualFetchCall: jest.SpiedFunction<typeof fetcher.callBggApi>;
+let spyActualFetchCall: jest.SpiedFunction<typeof fetcher.bggApiClient>;
 
 const testFetchBggDataParameters = {
   path: "collection",

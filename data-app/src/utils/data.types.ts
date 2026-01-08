@@ -27,6 +27,10 @@ export type DataPrepConfigs = {
   bggUserId: string;
   needToFetchFromBgg: boolean;
   whereToSave: "Locally" | "S3";
+  bggUrlPaths: {
+    collectionData: string;
+    gameData: string;
+  };
   localData: {
     dataDirectory: string;
     rawResponseFile: string;
@@ -44,8 +48,7 @@ export type DataPrepConfigs = {
   rolesToExtract: Record<string, string>;
 };
 
-export type FetchDataFromBggInput = {
-  path: string;
+export type bggApiClientInput = {
   parameters: string | number;
 };
 

@@ -1,7 +1,11 @@
 import { GameRelationshipProcessor } from "../../src/game/game-relationships-process.service";
+import { BggGameDataFromSingleCallJustTheGame } from "../../src/utils/data.types";
 import { idGenerator } from "../../src/utils/generate-id";
+import * as logger from "../../src/utils/log-messages";
+import { runStepFunction } from "../../src/utils/run-step-function";
 
 let processor: GameRelationshipProcessor;
+let spyLogMessage: jest.SpiedFunction<typeof logger.logMessage>;
 
 jest.mock("../../src/utils/generate-id", () => ({
   idGenerator: {
@@ -18,12 +22,13 @@ jest.mock("../../src/utils/data.config", () => ({
   },
 }));
 
-beforeEach(() => {
-  jest.clearAllMocks();
-  processor = new GameRelationshipProcessor();
-});
-
 describe("GameRelationshipProcessor", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    processor = new GameRelationshipProcessor();
+    spyLogMessage = jest.spyOn(logger, "logMessage");
+  });
+
   it("ignores roles not in rolesWeCareAbout", async () => {
     const gameData = {
       _attributes: { objectid: "123" },
@@ -210,7 +215,31 @@ describe("GameRelationshipProcessor", () => {
     if (!result.ok) {
       throw new Error(`Expect OK to be true, but got false: ${result.message}`);
     }
-    expect(result.data).toBe("");
+    expect(result.data).toBe("No data to return");
     expect(result.message).toBe("Processed relationships for BGG game ID: 432");
+  });
+
+  it("does not all logger when runStepFunction is successful", async () => {
+    const gameData = {
+      _attributes: { objectid: "123" },
+      publisher: {
+        _attributes: { objectid: "11" },
+        _text: "aaa",
+      },
+      designer: {
+        _attributes: { objectid: "12" },
+        _text: "bbb",
+      },
+    };
+
+    const processGameRelationshipsInput: BggGameDataFromSingleCallJustTheGame =
+      gameData;
+    await runStepFunction<BggGameDataFromSingleCallJustTheGame, string>(
+      "Process game relationships",
+      processor.processGameRelationships,
+      processGameRelationshipsInput,
+    );
+
+    expect(spyLogMessage).not.toHaveBeenCalled();
   });
 });

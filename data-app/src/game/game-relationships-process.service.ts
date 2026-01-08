@@ -18,9 +18,9 @@ export class GameRelationshipProcessor {
   private seenRoles = new Set<string>();
   private seenEntityRoleCombo = new Set<string>();
 
-  public async processGameRelationships(
+  public processGameRelationships = async (
     gameData: BggGameDataFromSingleCallJustTheGame,
-  ): Promise<DataResponse<string>> {
+  ): Promise<DataResponse<string>> => {
     const bggGameId = gameData._attributes.objectid;
 
     for (const [roleName, roleValue] of Object.entries(gameData)) {
@@ -36,10 +36,10 @@ export class GameRelationshipProcessor {
 
     return {
       ok: true,
-      data: "",
+      data: "No data to return",
       message: `Processed relationships for BGG game ID: ${bggGameId}`,
     };
-  }
+  };
 
   private shouldProcessRole(roleName: string, roleValue: unknown): boolean {
     if (!roleValue) return false;

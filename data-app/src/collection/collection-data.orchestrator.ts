@@ -1,18 +1,18 @@
-import { convertBggData } from "./convert-bgg-data.service";
 import { fetchCollectionDataFromBgg } from "./fetch-bgg-collection-data.service";
+import { convertBggData } from "../utils/convert-bgg-data";
 import { dataConfigs } from "../utils/data.config";
 import type {
   BggCollectionData,
   ConvertBggDataInput,
-  FetchDataFromBggInput,
+  bggApiClientInput,
   SaveBggDataInput,
 } from "../utils/data.types";
 import { runStepFunction } from "../utils/run-step-function";
-import { saveBggData } from "../utils/save-bgg-data.service";
+import { saveBggData } from "../utils/save-bgg-data";
 
 export const collectionDataOrchestrator = async (): Promise<void> => {
   // FETCH BGG COLLECTION DATA
-  const fetchCollectionDataFromBggInput: FetchDataFromBggInput = {
+  const fetchCollectionDataFromBggInput: bggApiClientInput = {
     path: "collection",
     parameters: dataConfigs.bggUserId,
   };

@@ -7,6 +7,11 @@ export const dataConfigs: DataPrepConfigs = {
 
   whereToSave: "Locally",
 
+  bggUrlPaths: {
+    collectionData: "collection",
+    gameData: "boardgame",
+  },
+
   localData: {
     dataDirectory: "./src/data/",
     rawResponseFile: "./src/data/rawResponse.xml",

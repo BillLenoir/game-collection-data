@@ -1,7 +1,7 @@
+import { fetchBggDataForGame } from "./fetch-bgg-data-for-game.service";
 import { formatGameData } from "./format-game-data.service";
 import { gameRelationshipProcessor } from "./game-relationships-process.service";
-import { convertBggData } from "../collection/convert-bgg-data.service";
-import { callBggApi } from "../utils/bgg-api-client";
+import { convertBggData } from "../utils/convert-bgg-data";
 import { dataConfigs } from "../utils/data.config";
 import type {
   BggGameDataFromCollection,
@@ -9,56 +9,58 @@ import type {
   BggGameDataFromSingleCallJustTheGame,
   ConvertBggDataInput,
   DataResponse,
-  FetchDataFromBggInput,
+  bggApiClientInput,
   FormatGameDataInput,
   GameData,
   SaveBggDataInput,
 } from "../utils/data.types";
 import { runStepFunction } from "../utils/run-step-function";
-import { saveBggData } from "../utils/save-bgg-data.service";
+import { saveBggData } from "../utils/save-bgg-data";
 
 export const gameDataOrchestrator = async (
   gameId: string,
   bggGameDataFromCollection: BggGameDataFromCollection,
-): Promise<DataResponse<GameData> | void> => {
-  // FETCH BGG GAME DATA
+): Promise<DataResponse> => {
+  // Step 1: FETCH BGG GAME DATA
   const bggGameId = bggGameDataFromCollection._attributes.objectid;
-  const fetchGameDataFromBggInput: FetchDataFromBggInput = {
-    path: "boardgame",
+  const fetchBggDataForGameInput: bggApiClientInput = {
     parameters: bggGameId,
   };
-  const fetchGameDataFromBggResponse = await runStepFunction(
+  const fetchGameDataFromBggResponse = await runStepFunction<
+    bggApiClientInput,
+    string
+  >(
     `Fetch BGG Game Data for ${bggGameId}`,
-    callBggApi,
-    fetchGameDataFromBggInput,
+    fetchBggDataForGame,
+    fetchBggDataForGameInput,
   );
-  if (!fetchGameDataFromBggResponse)
+  if (!fetchGameDataFromBggResponse.ok)
     return {
       ok: false,
-      message: "Fetch failed",
+      message: `Fetch failed for ${bggGameId}: ${fetchGameDataFromBggResponse.message}`,
     };
 
-  // SAVE BGG GAME DATA
+  // Step 2: SAVE BGG GAME DATA
   const saveBggDataInput: SaveBggDataInput = {
-    dataToSave: fetchGameDataFromBggResponse,
+    dataToSave: fetchGameDataFromBggResponse.data,
     directory: `${dataConfigs.localData.dataDirectory}game-data/`,
     fileName: `game-${bggGameId}.xml`,
   };
-  const saveBggDataResponse = await runStepFunction(
+  const saveBggDataResponse = await runStepFunction<SaveBggDataInput, string>(
     `Save BGG Game Data for ${bggGameId}`,
     saveBggData,
     saveBggDataInput,
   );
-  if (!saveBggDataResponse) {
+  if (!saveBggDataResponse.ok) {
     return {
       ok: false,
-      message: "Save failed",
+      message: `Save failed for ${bggGameId}: ${fetchGameDataFromBggResponse.message}`,
     };
   }
 
-  // CONVERT BGG GAME DATA
+  // Step 3: CONVERT BGG GAME DATA
   const convertBggDataInput: ConvertBggDataInput = {
-    xml: fetchGameDataFromBggResponse,
+    xml: fetchGameDataFromBggResponse.data,
     options: { compact: true, spaces: 2 },
   };
   const convertBggDataResponse = await runStepFunction<
@@ -69,28 +71,33 @@ export const gameDataOrchestrator = async (
     convertBggData,
     convertBggDataInput,
   );
-  if (!convertBggDataResponse) {
+  if (!convertBggDataResponse.ok) {
     return {
       ok: false,
-      message: "Conversion failed",
+      message: `Conversion failed for ${bggGameId}: ${fetchGameDataFromBggResponse.message}`,
     };
   }
 
-  // FORMAT CONVERTED GAME DATA
+  // Step 4: FORMAT CONVERTED GAME DATA
   const formatBggGameDataInput: FormatGameDataInput = {
     gameId,
     collectionData: bggGameDataFromCollection,
-    gameData: convertBggDataResponse,
+    gameData: convertBggDataResponse.data,
   };
-  await runStepFunction<FormatGameDataInput, GameData>(
-    "Format Collection Data",
-    formatGameData,
-    formatBggGameDataInput,
-  );
+  const formatBggGameDataResponse = await runStepFunction<
+    FormatGameDataInput,
+    GameData
+  >("Format Collection Data", formatGameData, formatBggGameDataInput);
+  if (!formatBggGameDataResponse.ok) {
+    return {
+      ok: false,
+      message: `Conversion failed for ${bggGameId}: ${fetchGameDataFromBggResponse.message}`,
+    };
+  }
 
-  // PROCESS GAME RELATIONSHIPS
+  // Step 5: PROCESS GAME RELATIONSHIPS
   const processGameRelationshipsInput: BggGameDataFromSingleCallJustTheGame =
-    convertBggDataResponse.boardgames.boardgame;
+    convertBggDataResponse.data.boardgames.boardgame;
   const processGameRelationshipsResponse = await runStepFunction<
     BggGameDataFromSingleCallJustTheGame,
     string
@@ -99,10 +106,16 @@ export const gameDataOrchestrator = async (
     gameRelationshipProcessor.processGameRelationships,
     processGameRelationshipsInput,
   );
-  if (!processGameRelationshipsResponse) {
+  if (!processGameRelationshipsResponse.ok) {
     return {
       ok: false,
-      message: "Extraction of Entities failed",
+      message: `Processing of game relationships failed for ${bggGameId}: ${fetchGameDataFromBggResponse.message}`,
     };
   }
+
+  return {
+    ok: true,
+    data: "No data to return",
+    message: `Successfully processed game id: ${bggGameId}`,
+  };
 };
